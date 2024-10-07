@@ -45,7 +45,15 @@ To ensure the DataGenerator uses the correct AI provider:
    - Active: true
 4. Copy the entire AbstractDataGenerator code into the Script field.
 5. Click "Submit" to save the Script Include.
-6. Repeat all steps for the DataGenerator file.
+6. Click "New" to create a new Script Include.
+7. Set the following fields:
+   - Name: DataGenerator
+   - API Name: global.DataGenerator
+   - Client callable: false
+   - Acceible from: All application scopes
+   - Active: true
+8. Copy the entire DataGenerator code into the Script field.
+9. Click "Submit" to save the Script Include.
 
 ## Usage
 
