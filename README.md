@@ -1,6 +1,6 @@
 ﻿# NOW-Dynamic-Data-Generator
 
-This script includes a TaskManager class for ServiceNow that automates the creation of various types of cases (Incidents, CSM Cases, and HR Cases) with AI-generated content using the NOW Assist Generate Content skill.
+This script includes a DataGenerator class for ServiceNow that automates the creation of various types of cases (Incidents, CSM Cases, and HR Cases) with AI-generated content using the NOW Assist Generate Content skill.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ To use the OpenAI API with ServiceNow, you need to set up your API key:
 
 ### 2. Set Default Provider for Generate Content and Generic Prompt Skills
 
-To ensure the TaskManager uses the correct AI provider:
+To ensure the DataGenerator uses the correct AI provider:
 
 1. In the navigation filter, search for the OneExtend Capability table by entering sys_one_extend_capability.list.
 2. Open the record for the capability that you would like to configure, in this case we want to set a default provider for Generate Content.
@@ -42,81 +42,82 @@ To ensure the TaskManager uses the correct AI provider:
 
 ## Usage
 
-You can use the TaskManager in various ServiceNow server-side scripts. Here are some examples:
+You can use the DataGenerator in various ServiceNow server-side scripts. Here are some examples:
 
 ### Basic Usage to create an Incident (e.g., Background Script)
 
 ```javascript
-var taskManager = new TaskManager();
-taskManager.createCase('incident', '<Your short description>');
+// Instantiate the DataGenerator class
+var dataGen = new DataGenerator();
+dataGen.createCase('incident', '<Your short description>');
+
+// Log the sys_id of the created incident
+gs.info('Created Incident with sys_id: ' + incidentSysId);
+```
+
+### Basic Usage to create a CSM Case (e.g., Background Script)
+
+```javascript
+// Instantiate the DataGenerator class
+var dataGen = new DataGenerator();
+// Create a CSM case with a short description
+var csmCaseSysId = dataGen.createCase('csm_case', 'Issue with product delivery');
+
+// Log the sys_id of the created CSM case
+gs.info('Created CSM Case with sys_id: ' + csmCaseSysId);
+
+```
+
+### Basic Usage to create an HR Case (e.g., Background Script)
+
+```javascript
+// Instantiate the DataGenerator class
+var dataGen = new DataGenerator();
+// Create an HR case with a short description
+var hrCaseSysId = dataGen.createCase('hr_case', 'Request for leave extension');
+
+// Log the sys_id of the created HR case
+gs.info('Created HR Case with sys_id: ' + hrCaseSysId);
+
+```
+
+### Basic Usage to create a single healthcare claim with a random claim name (e.g., Background Script)
+```javascript
+// Instantiate the DataGenerator class
+var dataGen = new DataGenerator();
+var claimSysId = dataGen.createCase('healthcare_claim');
+
+// Log the sys_ids of the created healthcare claims
+gs.info('Created Healthcare Claim with sys_id: ' + claimSysId);
+```
+
+### Basic Usage to create multiple healthcare claims with random claim names (e.g., Background Script)
+```javascript
+// Instantiate the DataGenerator class
+// Create 3 healthcare claims
+var healthcareClaimsSysIds = dataGen.createCase('healthcare_claim', null, 3);
+
+// Log the sys_ids of the created healthcare claims
+gs.info('Created Healthcare Claims with sys_ids: ' + healthcareClaimsSysIds.join(', '));
+
 ```
 
 ### Basic Usage to create a Change Request (e.g., Background Script)
 
 ```javascript
-var taskManager = new TaskManager();
-var changeRequestSysId = taskManager.createCase('change_request');
-```
+// Instantiate the DataGenerator class
+var dataGen = new DataGenerator();
+// Create a change request with a short description
+var changeRequestSysId = dataGen.createCase('change_request', 'Upgrade database server');
 
-### Basic Usage to create a single healthcare claim with a random claim name (e.g., Background Script)
-```javascript
-var taskManager = new TaskManager();
-var claimSysIds = taskManager.createCase('healthcare_claim');
-```
+// Log the sys_id of the created change request
+gs.info('Created Change Request with sys_id: ' + changeRequestSysId);
 
-### Basic Usage to create multiple healthcare claims with random claim names (e.g., Background Script)
-```javascript
-var taskManager = new TaskManager();
-var claimSysIds = taskManager.createCase('healthcare_claim', null, 5); // Generates 5 claims
-```
-### Usage in a Business Rule
-
-```javascript
-(function executeRule(current, previous /*null when async*/) {
-    var taskManager = new TaskManager();
-    taskManager.createCase('csm_case', current.short_description);
-})(current, previous);
-```
-
-### Usage in a Scheduled Job
-
-```javascript
-var taskManager = new TaskManager();
-taskManager.createCase('hr_case', 'Annual performance review process initiation');
-```
-
-### Usage in a UI Action script
-
-```javascript
-function onExecute() {
-    var taskManager = new TaskManager();
-    taskManager.createCase('incident', g_form.getValue('short_description'));
-    return false; // Prevent form submission if needed
-}
-```
-
-### Usage in a Scripted REST API
-
-```javascript
-(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
-    var taskManager = new TaskManager();
-    var caseType = request.queryParams.case_type;
-    var shortDescription = request.queryParams.short_description;
-    
-    if (caseType && shortDescription) {
-        taskManager.createCase(caseType, shortDescription);
-        response.setStatus(201);
-        response.setBody("Case created successfully");
-    } else {
-        response.setStatus(400);
-        response.setBody("Missing required parameters");
-    }
-})(request, response);
 ```
 
 ## Customization
 
-You can customize the TaskManager by modifying the following:
+You can customize the DataGenerator by modifying the following:
 
 - Update the `sys_id` constants at the top of the script to match your ServiceNow instance's record system IDs.
 - Modify the `_createIncident`, `_createCSMCase`, and `_createHRCase` methods to include additional fields or logic specific to your needs.
