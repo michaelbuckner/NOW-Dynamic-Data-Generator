@@ -1,6 +1,6 @@
-var TaskManager = Class.create();
+var DataGenerator = Class.create();
 
-TaskManager.prototype = {
+DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
     // Constants for sys_id values with descriptive names
     INCIDENT_END_USER_SYSID: '62826bf03710200044e0bfc8bcbe5df1', // Sys_id of the incident caller (end user)
     CONFIGURATION_ITEM_SYSID: '3a6cdbdbc0a8ce01008ef85f28b07a41', // Sys_id of the configuration item (CI)
@@ -19,7 +19,8 @@ TaskManager.prototype = {
     CHANGE_MODEL_SYSID: '007c4001c343101035ae3f52c1d3aeb2', // Sys_id of the change model
 
     initialize: function() {
-        // Initialization function (empty in this case)
+        AbstractDataGenerator.prototype.initialize.call(this);
+        // Additional initialization if needed
     },
 
     /**
@@ -355,11 +356,10 @@ TaskManager.prototype = {
     },
 
     /**
-     * Creates a change request with the specified short description.
-     * @param {String} shortDescription - The short description of the change request.
+     * Creates a change request with generated data.
      * @returns {String|null} - The sys_id of the created change request, or null if failed.
      */
-    _createChangeRequest: function(shortDescription) {
+    _createChangeRequest: function() {
         // Get a random user from sys_user
         var requestedBySysId = this._getRandomRecordSysId('sys_user');
 
@@ -398,8 +398,8 @@ TaskManager.prototype = {
         var implementationPlanPrompt = 'Outline an implementation plan for the change request affecting "' + ciName + '".';
         var implementationPlan = this._generateUniqueContent(implementationPlanPrompt);
 
-		var riskImpactPrompt = 'Analyze the risks and impacts associated with the change request affecting "' + ciName + '".';
-		var riskImpactAnalysis = this._generateUniqueContent(riskImpactPrompt);
+        var riskImpactPrompt = 'Analyze the risks and impacts associated with the change request affecting "' + ciName + '".';
+        var riskImpactAnalysis = this._generateUniqueContent(riskImpactPrompt);
 
         var backoutPlanPrompt = 'Describe a backout plan for the change request affecting "' + ciName + '".';
         var backoutPlan = this._generateUniqueContent(backoutPlanPrompt);
@@ -426,10 +426,10 @@ TaskManager.prototype = {
             description: description,
             change_model: this.CHANGE_MODEL_SYSID,
             assignment_group: assignmentGroupSysId,
-            //assigned_to: assignedToSysId,
+            // assigned_to: assignedToSysId,
             justification: justification,
             implementation_plan: implementationPlan,
-			risk_impact_analysis: riskImpactAnalysis,
+            risk_impact_analysis: riskImpactAnalysis,
             backout_plan: backoutPlan,
             test_plan: testPlan,
             start_date: startDate,
@@ -441,54 +441,32 @@ TaskManager.prototype = {
     },
 
     /**
-     * Retrieves a random choice value for a given table and field.
-     * @param {String} tableName - The name of the table.
-     * @param {String} fieldName - The name of the field.
-     * @returns {String} - A random choice value.
-     */
-    _getRandomChoiceValue: function(tableName, fieldName) {
-        var choices = [];
-        var choiceGR = new GlideRecord('sys_choice');
-        choiceGR.addQuery('name', tableName);
-        choiceGR.addQuery('element', fieldName);
-        choiceGR.query();
-        while (choiceGR.next()) {
-            choices.push(choiceGR.getValue('value'));
-        }
-        if (choices.length > 0) {
-            return choices[Math.floor(Math.random() * choices.length)];
-        }
-        return '';
-    },
-
-    /**
      * Retrieves a random configuration item associated with a business service.
      * @param {String} businessServiceSysId - The sys_id of the business service.
      * @returns {String} - The sys_id of a related configuration item.
      */
-_getRandomRelatedCi: function(businessServiceSysId) {
-    var ciSysIds = [];
-    var relGR = new GlideRecord('cmdb_rel_ci');
-    // Find relationships where the business service is either the parent or child
-    relGR.addQuery('parent', businessServiceSysId).addOrCondition('child', businessServiceSysId);
-    relGR.query();
-    while (relGR.next()) {
-        // If the business service is the parent, get the child CI
-        if (relGR.parent.sys_id.toString() === businessServiceSysId) {
-            ciSysIds.push(relGR.child.sys_id.toString());
-        } else {
-            // If the business service is the child, get the parent CI
-            ciSysIds.push(relGR.parent.sys_id.toString());
+    _getRandomRelatedCi: function(businessServiceSysId) {
+        var ciSysIds = [];
+        var relGR = new GlideRecord('cmdb_rel_ci');
+        // Find relationships where the business service is either the parent or child
+        relGR.addQuery('parent', businessServiceSysId).addOrCondition('child', businessServiceSysId);
+        relGR.query();
+        while (relGR.next()) {
+            // If the business service is the parent, get the child CI
+            if (relGR.parent.sys_id.toString() === businessServiceSysId) {
+                ciSysIds.push(relGR.child.sys_id.toString());
+            } else {
+                // If the business service is the child, get the parent CI
+                ciSysIds.push(relGR.parent.sys_id.toString());
+            }
         }
-    }
-    if (ciSysIds.length > 0) {
-        return ciSysIds[Math.floor(Math.random() * ciSysIds.length)];
-    } else {
-        // If no related CIs, pick any random CI
-        return this._getRandomRecordSysId('cmdb_ci');
-    }
-},
-
+        if (ciSysIds.length > 0) {
+            return ciSysIds[Math.floor(Math.random() * ciSysIds.length)];
+        } else {
+            // If no related CIs, pick any random CI
+            return this._getRandomRecordSysId('cmdb_ci');
+        }
+    },
 
     /**
      * Retrieves the name of a configuration item based on its sys_id.
@@ -521,37 +499,6 @@ _getRandomRelatedCi: function(businessServiceSysId) {
         } else {
             // If no users in group, pick any random user
             return this._getRandomRecordSysId('sys_user');
-        }
-    },
-
-    /**
-     * Generates unique content based on the provided prompt by calling an external API.
-     * @param {String} prompt - The prompt to generate content from.
-     * @returns {String} - The generated unique content.
-     */
-    _generateUniqueContent: function(prompt) {
-        var request = {
-            "executionRequests": [
-                {
-                    "payload": {
-                        "prompt": prompt
-                    },
-                    "capabilityId": "0c90ca79533121106b38ddeeff7b12d7"
-                }
-            ]
-        };
-
-        // Execute the request using OneExtendUtil
-        var response = sn_one_extend.OneExtendUtil.execute(request);
-
-        if (response && response.capabilities && response.capabilities["0c90ca79533121106b38ddeeff7b12d7"]) {
-            var uniqueContent = response.capabilities["0c90ca79533121106b38ddeeff7b12d7"].response;
-            // Remove any leading or trailing quotation marks
-            uniqueContent = uniqueContent.replace(/^["']|["']$/g, '');
-            return uniqueContent;
-        } else {
-            gs.error('Error generating unique content.');
-            return 'Unable to generate content at this time.';
         }
     },
 
@@ -647,71 +594,6 @@ _getRandomRelatedCi: function(businessServiceSysId) {
     },
 
     /**
-     * Retrieves a random record's sys_id from the specified table.
-     * @param {String} tableName - The name of the table to query.
-     * @returns {String} - The sys_id of a random record, or an empty string if none found.
-     */
-    _getRandomRecordSysId: function(tableName) {
-        var gr = new GlideRecord(tableName);
-        gr.query();
-        var records = [];
-        while (gr.next()) {
-            records.push(gr.getUniqueValue());
-        }
-        if (records.length > 0) {
-            // Return a random record's sys_id from the list
-            return records[Math.floor(Math.random() * records.length)];
-        }
-        // Return empty string if no records found
-        return '';
-    },
-
-    /**
-     * Generates a random number string of specified length.
-     * @param {Number} length - The length of the number string to generate.
-     * @returns {String} - The generated random number string.
-     */
-    _generateRandomNumberString: function(length) {
-        var result = '';
-        for (var i = 0; i < length; i++) {
-            result += Math.floor(Math.random() * 10).toString();
-        }
-        return result;
-    },
-
-    /**
-     * Generates a random medical record number.
-     * @returns {String} - The generated medical record number.
-     */
-    _generateRandomMedicalRecordNumber: function() {
-        return 'MRN' + this._generateRandomNumberString(6);
-    },
-
-    /**
-     * Generates a random patient account number.
-     * @returns {String} - The generated patient account number.
-     */
-    _generateRandomPatientAccountNumber: function() {
-        return 'PAN' + this._generateRandomNumberString(8);
-    },
-
-    /**
-     * Generates a random service provider ID.
-     * @returns {String} - The generated service provider ID.
-     */
-    _generateRandomServiceProviderId: function() {
-        return 'SPID' + this._generateRandomNumberString(5);
-    },
-
-    /**
-     * Generates a random billed DRG code.
-     * @returns {String} - The generated billed DRG code.
-     */
-    _generateRandomBilledDrgCode: function() {
-        return 'DRG' + this._generateRandomNumberString(3);
-    },
-
-    /**
      * Retrieves the name of the patient based on their sys_id.
      * @param {String} patientSysId - The sys_id of the patient.
      * @returns {String} - The name of the patient, or a default value if not found.
@@ -750,15 +632,36 @@ _getRandomRelatedCi: function(businessServiceSysId) {
     },
 
     /**
-     * Generates a random amount between min and max.
-     * @param {Number} min - The minimum amount.
-     * @param {Number} max - The maximum amount.
-     * @returns {String} - The generated random amount as a string with two decimal places.
+     * Generates a random medical record number.
+     * @returns {String} - The generated medical record number.
      */
-    _generateRandomAmount: function(min, max) {
-        var amount = Math.random() * (max - min) + min;
-        return amount.toFixed(2);
+    _generateRandomMedicalRecordNumber: function() {
+        return 'MRN' + this._generateRandomNumberString(6);
     },
 
-    type: 'TaskManager'
-};
+    /**
+     * Generates a random patient account number.
+     * @returns {String} - The generated patient account number.
+     */
+    _generateRandomPatientAccountNumber: function() {
+        return 'PAN' + this._generateRandomNumberString(8);
+    },
+
+    /**
+     * Generates a random service provider ID.
+     * @returns {String} - The generated service provider ID.
+     */
+    _generateRandomServiceProviderId: function() {
+        return 'SPID' + this._generateRandomNumberString(5);
+    },
+
+    /**
+     * Generates a random billed DRG code.
+     * @returns {String} - The generated billed DRG code.
+     */
+    _generateRandomBilledDrgCode: function() {
+        return 'DRG' + this._generateRandomNumberString(3);
+    },
+
+    type: 'DataGenerator'
+});
