@@ -1,6 +1,13 @@
 ﻿# NOW-Dynamic-Data-Generator
 
-This script includes a DataGenerator class for ServiceNow that automates the creation of various types of cases (Incidents, CSM Cases, and HR Cases) with AI-generated content using the NOW Assist Generate Content skill.
+This script includes a DataGenerator class for ServiceNow that automates the creation of various types of records with AI-generated content using the NOW Assist Generate Content skill.
+
+Supported Record:
+- Incidents
+- Changes
+- CSM Cases
+- HR Cases
+- Healthcare Claims
 
 ## Prerequisites
 
