@@ -76,7 +76,7 @@ gs.info('Created Incident with sys_id: ' + incidentSysId);
 // Instantiate the DataGenerator class
 var dataGen = new DataGenerator();
 // Create a CSM case with a short description
-var csmCaseSysId = dataGen.createCase('csm_case', 'Issue with product delivery');
+var csmCaseSysId = dataGen.createCase('csm_case', '<Your short description>');
 
 // Log the sys_id of the created CSM case
 gs.info('Created CSM Case with sys_id: ' + csmCaseSysId);
@@ -89,7 +89,7 @@ gs.info('Created CSM Case with sys_id: ' + csmCaseSysId);
 // Instantiate the DataGenerator class
 var dataGen = new DataGenerator();
 // Create an HR case with a short description
-var hrCaseSysId = dataGen.createCase('hr_case', 'Request for leave extension');
+var hrCaseSysId = dataGen.createCase('hr_case', '<Your short description>');
 
 // Log the sys_id of the created HR case
 gs.info('Created HR Case with sys_id: ' + hrCaseSysId);
@@ -123,7 +123,7 @@ gs.info('Created Healthcare Claims with sys_ids: ' + healthcareClaimsSysIds.join
 // Instantiate the DataGenerator class
 var dataGen = new DataGenerator();
 // Create a change request with a short description
-var changeRequestSysId = dataGen.createCase('change_request', 'Upgrade database server');
+var changeRequestSysId = dataGen.createCase('change_request');
 
 // Log the sys_id of the created change request
 gs.info('Created Change Request with sys_id: ' + changeRequestSysId);
