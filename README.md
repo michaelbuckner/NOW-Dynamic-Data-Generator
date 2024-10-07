@@ -31,12 +31,14 @@ To ensure the TaskManager uses the correct AI provider:
 1. In your ServiceNow instance, navigate to **System Definition** > **Script Includes**.
 2. Click "New" to create a new Script Include.
 3. Set the following fields:
-   - Name: TaskManager
-   - API Name: global.TaskManager
+   - Name: AbstractDataGenerator
+   - API Name: global.AbstractDataGenerator
    - Client callable: false
+   - Acceible from: All application scopes
    - Active: true
-4. Copy the entire TaskManager code into the Script field.
+4. Copy the entire AbstractDataGenerator code into the Script field.
 5. Click "Submit" to save the Script Include.
+6. Repeat all steps for the DataGenerator file.
 
 ## Usage
 
