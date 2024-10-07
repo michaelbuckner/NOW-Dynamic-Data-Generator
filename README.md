@@ -64,7 +64,7 @@ You can use the DataGenerator in various ServiceNow server-side scripts. Here ar
 ```javascript
 // Instantiate the DataGenerator class
 var dataGen = new DataGenerator();
-dataGen.createCase('incident', '<Your short description>');
+var dataGen.createCase('incident', '<Your short description>');
 
 // Log the sys_id of the created incident
 gs.info('Created Incident with sys_id: ' + incidentSysId);
