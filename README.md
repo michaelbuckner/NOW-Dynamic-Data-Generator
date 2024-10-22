@@ -1,5 +1,11 @@
 ﻿# NOW-Dynamic-Data-Generator
 
+ ![image](https://github.com/user-attachments/assets/bc78048f-1040-49bd-b929-17feacf247bb)
+
+ ![image](https://github.com/user-attachments/assets/34c418d5-4b8e-4182-aa9d-d1d70c232828)
+
+
+
 This script includes a DataGenerator class for ServiceNow that automates the creation of various types of records with AI-generated content using the NOW Assist Generate Content skill.
 
 Supported Record:
