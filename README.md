@@ -9,6 +9,8 @@ Supported Record:
 - HR Cases
 - Healthcare Claims
 
+There is also an additional script include for generating mass summarizies and emailing them.
+
 ## Prerequisites
 
 1. ServiceNow instance with NOW Assist capabilities
