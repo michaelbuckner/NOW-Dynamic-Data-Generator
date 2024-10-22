@@ -143,7 +143,7 @@ var summaryReport = summarizer.generateSummaryReport(30);
 
 var email = new GlideEmailOutbound();
 email.addRecipient('<your@email>');
-email.setSubject('Test Email');
+email.setSubject('Operations Summary');
 email.setBody(summaryReport);
 email.save();
 
