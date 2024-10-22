@@ -21,7 +21,7 @@ MassSummarize.prototype = Object.extendsObject(AbstractDataGenerator, {
                 tableName: 'incident',
                 label: 'Incidents',
                 conditions: 'opened_at>=javascript:gs.dateGenerate("' + startDate.getLocalDate() + '","00:00:00")',
-                fields: ['number', 'short_description', 'priority', 'state']
+                fields: ['sys_id', 'number', 'short_description', 'priority', 'state']
             },
             {
                 tableName: 'change_request',
@@ -69,6 +69,12 @@ MassSummarize.prototype = Object.extendsObject(AbstractDataGenerator, {
         for (var i = 0; i < tablesToSummarize.length; i++) {
             var tableConfig = tablesToSummarize[i];
             var records = this._getRecords(tableConfig);
+
+            // Attach SLAs to incidents
+            if (tableConfig.tableName === 'incident') {
+                this._attachSLAsToIncidents(records);
+            }
+
             var significantRecords = this._getSignificantRecords(records, 5);
 
             tableData[tableConfig.label] = {
@@ -78,6 +84,46 @@ MassSummarize.prototype = Object.extendsObject(AbstractDataGenerator, {
         }
 
         return tableData;
+    },
+
+    /**
+     * Attaches SLAs to incident records.
+     * @param {Array} records - The array of incident records.
+     */
+    _attachSLAsToIncidents: function(records) {
+        var incidentSysIds = records.map(function(record) {
+            return record.sys_id;
+        });
+
+        if (incidentSysIds.length === 0) {
+            return;
+        }
+
+        var slaGR = new GlideRecord('task_sla');
+        slaGR.addQuery('task', 'IN', incidentSysIds);
+        slaGR.query();
+
+        var slaMap = {};
+        while (slaGR.next()) {
+            var taskSysId = slaGR.getValue('task');
+            if (!slaMap[taskSysId]) {
+                slaMap[taskSysId] = [];
+            }
+            slaMap[taskSysId].push({
+                sla_name: slaGR.getDisplayValue('sla'),
+                stage: slaGR.getValue('stage'),
+                percentage: slaGR.getValue('percentage'),
+                business_percentage: slaGR.getValue('business_percentage'),
+                time_left: slaGR.getDisplayValue('time_left'),
+                has_breached: slaGR.getValue('has_breached')
+            });
+        }
+
+        // Attach the SLA data to the corresponding incident records
+        for (var i = 0; i < records.length; i++) {
+            var incident = records[i];
+            incident.slas = slaMap[incident.sys_id] || [];
+        }
     },
 
     /**
@@ -101,13 +147,38 @@ MassSummarize.prototype = Object.extendsObject(AbstractDataGenerator, {
                 continue;
             }
 
-            content += '<ul>';
-            for (var i = 0; i < records.length; i++) {
-                var record = records[i];
-                var description = record['short_description'] || record['ci.name'] || 'No description';
-                content += '<li><strong>' + record.number + '</strong>: ' + description + '</li>';
+            if (label === 'Incidents') {
+                // Handle incidents with SLA data
+                content += '<ul>';
+                for (var i = 0; i < records.length; i++) {
+                    var record = records[i];
+                    var description = record['short_description'] || 'No description';
+                    content += '<li><strong>' + record.number + '</strong>: ' + description;
+
+                    // Include SLA data
+                    if (record.slas && record.slas.length > 0) {
+                        content += '<ul>';
+                        for (var j = 0; j < record.slas.length; j++) {
+                            var sla = record.slas[j];
+                            content += '<li>SLA: ' + sla.sla_name + ', Stage: ' + sla.stage + ', Percentage: ' + sla.percentage + '%, Time Left: ' + sla.time_left + ', Breached: ' + sla.has_breached + '</li>';
+                        }
+                        content += '</ul>';
+                    } else {
+                        content += '<p>No SLAs associated.</p>';
+                    }
+                    content += '</li>';
+                }
+                content += '</ul>';
+            } else {
+                // Existing code for other tables
+                content += '<ul>';
+                for (var i = 0; i < records.length; i++) {
+                    var record = records[i];
+                    var description = record['short_description'] || record['ci.name'] || 'No description';
+                    content += '<li><strong>' + record.number + '</strong>: ' + description + '</li>';
+                }
+                content += '</ul>';
             }
-            content += '</ul>';
 
             htmlSections.push({
                 label: label,
@@ -133,7 +204,7 @@ MassSummarize.prototype = Object.extendsObject(AbstractDataGenerator, {
             prompts.push({
                 type: 'section',
                 prompt: 'Provide an HTML-formatted summary for the following ' + section.label.toLowerCase() +
-                    ' for a regulatory review meeting. Focus on significant issues and compliance considerations.\n' +
+                    ' for a regulatory review meeting. Focus on significant issues, SLAs, and compliance considerations.\n' +
                     section.content + '\nUse appropriate HTML tags for formatting.'
             });
         }
@@ -147,56 +218,11 @@ MassSummarize.prototype = Object.extendsObject(AbstractDataGenerator, {
             type: 'final',
             prompt: 'As an IT operations executive preparing for a regulatory review meeting, provide a detailed report for the past ' +
                 numDays + ' days based on the following summaries formatted in HTML:\n' + allContent +
-                '\nThe report should include key findings, compliance considerations, and any actions taken. ' +
+                '\nThe report should include key findings, SLA compliance, compliance considerations, and any actions taken. ' +
                 'Use HTML tags for headings, paragraphs, and lists to format the report appropriately for email.'
         });
 
         return prompts;
-    },
-
-    /**
-     * Processes prompts in batches and combines results.
-     * @param {Array} prompts - Array of prompt objects.
-     * @returns {String} - Combined HTML report.
-     */
-    _processBatchedPrompts: function(prompts) {
-        var results = [];
-        var currentBatch = [];
-        var currentTokenCount = 0;
-
-        for (var i = 0; i < prompts.length; i++) {
-            var prompt = prompts[i];
-            var estimatedTokens = this._estimateTokenCount(prompt.prompt);
-
-            // If adding this prompt would exceed token limit or batch size, process current batch
-            if (currentTokenCount + estimatedTokens > this.MAX_TOKENS_PER_REQUEST ||
-                currentBatch.length >= this.MAX_BATCH_SIZE) {
-                this._processBatch(currentBatch, results);
-                currentBatch = [];
-                currentTokenCount = 0;
-            }
-
-            currentBatch.push(prompt);
-            currentTokenCount += estimatedTokens;
-        }
-
-        // Process any remaining prompts
-        if (currentBatch.length > 0) {
-            this._processBatch(currentBatch, results);
-        }
-
-        // Combine all results into final report
-        var sectionsHTML = results.filter(function(r) {
-            return r.type === 'section';
-        }).map(function(r) {
-            return r.content;
-        }).join('<br/><br/>');
-
-        var finalSummary = results.find(function(r) {
-            return r.type === 'final';
-        });
-
-        return sectionsHTML + '<br/><br/><h2>Executive Summary</h2>' + finalSummary.content;
     },
 
     /**
@@ -269,12 +295,9 @@ MassSummarize.prototype = Object.extendsObject(AbstractDataGenerator, {
             "executionRequests": requests
         });
 
-        if (response && response.capabilities) {
+        if (response && response.capabilities && response.capabilities["0c90ca79533121106b38ddeeff7b12d7"]) {
             var capabilityResponses = response.capabilities["0c90ca79533121106b38ddeeff7b12d7"];
-            
-            // Log the response for debugging
-            gs.debug('API Response: ' + JSON.stringify(capabilityResponses));
-            
+
             // Handle single response vs array response
             if (!Array.isArray(capabilityResponses)) {
                 // If it's a single response, wrap it in an array
@@ -282,9 +305,9 @@ MassSummarize.prototype = Object.extendsObject(AbstractDataGenerator, {
             }
 
             for (var i = 0; i < batch.length; i++) {
-                var response = capabilityResponses[i];
-                if (response && response.response) {
-                    var content = response.response;
+                var res = capabilityResponses[i];
+                if (res && res.response) {
+                    var content = res.response;
                     // Remove quotes if they exist
                     content = content.replace(/^["']|["']$/g, '');
                     results.push({
@@ -292,7 +315,7 @@ MassSummarize.prototype = Object.extendsObject(AbstractDataGenerator, {
                         content: content
                     });
                 } else {
-                    gs.error('Invalid response format for prompt ' + i + ' in batch. Response: ' + JSON.stringify(response));
+                    gs.error('Invalid response format for prompt ' + i + ' in batch. Response: ' + JSON.stringify(res));
                     results.push({
                         type: batch[i].type,
                         content: '<p>Error: Unable to generate content for this section.</p>'
@@ -326,6 +349,10 @@ MassSummarize.prototype = Object.extendsObject(AbstractDataGenerator, {
                 } else {
                     record[fieldName] = gr.getDisplayValue(fieldName);
                 }
+            }
+            // Include sys_id for incident records to attach SLAs later
+            if (tableConfig.tableName === 'incident') {
+                record.sys_id = gr.getUniqueValue();
             }
             records.push(record);
         }
