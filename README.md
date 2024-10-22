@@ -1,6 +1,7 @@
 ﻿# NOW-Dynamic-Data-Generator
 
- ![image](https://github.com/user-attachments/assets/bc78048f-1040-49bd-b929-17feacf247bb) ![image](https://github.com/user-attachments/assets/34c418d5-4b8e-4182-aa9d-d1d70c232828)
+ ![image](https://github.com/user-attachments/assets/bc78048f-1040-49bd-b929-17feacf247bb) ![image](https://github.com/user-attachments/assets/a9888184-05cc-407b-bc07-64433eace7b0)
+
 
 
 
