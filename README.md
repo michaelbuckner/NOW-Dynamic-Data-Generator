@@ -130,6 +130,23 @@ gs.info('Created Change Request with sys_id: ' + changeRequestSysId);
 
 ```
 
+### Basic Usage to email a mass summary (e.g., Scheduled job)
+
+```javascript
+// Instantiate the MassSummarize class
+var summarizer = new MassSummarize();
+
+// Generate the HTML summary report for the past 30 days
+var summaryReport = summarizer.generateSummaryReport(30);
+
+var email = new GlideEmailOutbound();
+email.addRecipient('<your@email>');
+email.setSubject('Test Email');
+email.setBody(summaryReport);
+email.save();
+
+```
+
 ## Customization
 
 You can customize the DataGenerator by modifying the following:
