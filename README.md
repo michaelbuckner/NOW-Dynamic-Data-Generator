@@ -129,7 +129,7 @@ gs.info('Created Healthcare Claims with sys_ids: ' + healthcareClaimsSysIds.join
 ```javascript
 // Instantiate the DataGenerator class
 var dataGen = new DataGenerator();
-// Create a change request with a short description
+// Create a change request
 var changeRequestSysId = dataGen.createCase('change_request');
 
 // Log the sys_id of the created change request
