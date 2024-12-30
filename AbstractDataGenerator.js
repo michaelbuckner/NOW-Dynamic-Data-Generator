@@ -101,5 +101,129 @@ AbstractDataGenerator.prototype = {
         return amount.toFixed(2);
     },
 
+    /**
+     * Creates a new record in the specified table with the given fields.
+     * @param {String} tableName - The name of the table to insert the record into.
+     * @param {Object} fields - An object containing field names and values to set on the record.
+     * @returns {String|null} - The sys_id of the created record, or null if failed.
+     */
+    _createCaseRecord: function(tableName, fields) {
+        var gr = new GlideRecord(tableName);
+        gr.initialize();
+        // Set field values from the fields object
+        for (var field in fields) {
+            gr.setValue(field, fields[field]);
+        }
+        var sysId = gr.insert();
+        if (!sysId) {
+            gs.error('Failed to insert record into ' + tableName + '. Error: ' + gr.getLastErrorMessage());
+        }
+        return sysId;
+    },
+
+    /**
+     * Adds comments and work notes to the specified case.
+     * @param {String} tableName - The name of the table containing the case.
+     * @param {String} caseSysId - The sys_id of the case record.
+     * @param {Array} entries - An array of entries to add to the case.
+     */
+    _addCommentsAndWorkNotes: function(tableName, caseSysId, entries) {
+        for (var i = 0; i < entries.length; i++) {
+            var entry = entries[i];
+
+            // Impersonate the user
+            var impUser = new GlideImpersonate();
+            impUser.impersonate(entry.user);
+
+            var caseUpdate = new GlideRecord(tableName);
+            if (caseUpdate.get(caseSysId)) {
+                // Add the comment or work note to the case
+                if (entry.type === 'comment') {
+                    caseUpdate.comments = entry.text;
+                } else {
+                    caseUpdate.work_notes = entry.text;
+                }
+                caseUpdate.update();
+            }
+
+            // Revert impersonation
+            impUser.unimpersonate();
+        }
+    },
+
+    /**
+     * Adds an attachment to the specified case.
+     * @param {String} tableName - The name of the table containing the case.
+     * @param {String} caseSysId - The sys_id of the case record.
+     * @param {String} fileName - The name of the attachment file.
+     * @param {String} fileContent - The content of the attachment file.
+     */
+    _addAttachment: function(tableName, caseSysId, fileName, fileContent) {
+        var attachment = new GlideSysAttachment();
+        attachment.write(tableName, caseSysId, fileName, 'text/plain', fileContent);
+    },
+
+    /**
+     * Retrieves the name of a configuration item based on its sys_id.
+     * @param {String} ciSysId - The sys_id of the configuration item.
+     * @returns {String} - The name of the configuration item.
+     */
+    _getCiName: function(ciSysId) {
+        var ciGr = new GlideRecord('cmdb_ci');
+        if (ciGr.get(ciSysId)) {
+            return ciGr.getDisplayValue('name');
+        }
+        return 'the configuration item';
+    },
+
+    /**
+     * Retrieves a random user who is a member of the specified group.
+     * @param {String} groupSysId - The sys_id of the group.
+     * @returns {String} - The sys_id of a user in the group.
+     */
+    _getRandomUserInGroup: function(groupSysId) {
+        var userSysIds = [];
+        var groupMemberGR = new GlideRecord('sys_user_grmember');
+        groupMemberGR.addQuery('group', groupSysId);
+        groupMemberGR.query();
+        while (groupMemberGR.next()) {
+            userSysIds.push(groupMemberGR.getValue('user'));
+        }
+        if (userSysIds.length > 0) {
+            return userSysIds[Math.floor(Math.random() * userSysIds.length)];
+        }
+        // If no users in group, pick any random user
+        return this._getRandomRecordSysId('sys_user');
+    },
+
+    /**
+     * Retrieves the name of the user based on their sys_id.
+     * @param {String} userSysId - The sys_id of the user.
+     * @returns {String} - The name of the user, or a default value if not found.
+     */
+    _getUserName: function(userSysId) {
+        var userGr = new GlideRecord('sys_user');
+        if (userGr.get(userSysId)) {
+            return userGr.getDisplayValue('name');
+        }
+        return 'the user';
+    },
+
+    /**
+     * Performance monitoring wrapper
+     */
+    _measurePerformance: function(functionName, callback) {
+        var start = new Date().getTime();
+        var result = callback();
+        var end = new Date().getTime();
+        
+        this._log('info', 'Performance', {
+            function: functionName,
+            duration: (end - start) + 'ms'
+        });
+        
+        return result;
+    },
+
     type: 'AbstractDataGenerator'
 };

@@ -509,7 +509,6 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
      */
     _generateDetailedDescription: function(shortDescription) {
         var prompt = 'Provide a detailed description for the issue: "' + shortDescription + '". Include possible causes and the impact on the user.';
-        // Generate unique content based on the prompt
         return this._generateUniqueContent(prompt);
     },
 
@@ -661,6 +660,28 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
      */
     _generateRandomBilledDrgCode: function() {
         return 'DRG' + this._generateRandomNumberString(3);
+    },
+
+    /**
+     * Validates case creation parameters
+     * @param {String} caseType - The type of case
+     * @param {String} shortDescription - The description
+     * @returns {Boolean} - Whether inputs are valid
+     */
+    _validateCaseInputs: function(caseType, shortDescription) {
+        var validTypes = ['incident', 'csm_case', 'hr_case', 'healthcare_claim', 'change_request'];
+        
+        if (!caseType || !validTypes.includes(caseType)) {
+            gs.error('Invalid case type: ' + caseType);
+            return false;
+        }
+        
+        if (caseType !== 'healthcare_claim' && !shortDescription) {
+            gs.error('Short description required for case type: ' + caseType);
+            return false;
+        }
+        
+        return true;
     },
 
     type: 'DataGenerator'
