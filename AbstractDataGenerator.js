@@ -225,5 +225,109 @@ AbstractDataGenerator.prototype = {
         return result;
     },
 
+    /**
+     * Generates a detailed description for the case based on the short description.
+     * @param {String} shortDescription - The short description of the case.
+     * @returns {String} - The generated detailed description.
+     */
+    _generateDetailedDescription: function(shortDescription) {
+        var prompt = 'Provide a detailed description for the issue: "' + shortDescription + '". Include possible causes and the impact on the user.';
+        return this._generateUniqueContent(prompt);
+    },
+
+    /**
+     * Generates entries (comments and work notes) for the case based on the short description.
+     * This is a generic implementation - child classes may override with specific implementations.
+     * @param {String} shortDescription - The short description of the case.
+     * @param {String} endUserSysId - The sys_id of the end user.
+     * @param {String} agentUserSysId - The sys_id of the agent user.
+     * @param {String} ciName - The name of the configuration item.
+     * @returns {Array} - An array of entry objects containing type, text, and user.
+     */
+    _generateEntries: function(shortDescription, endUserSysId, agentUserSysId, ciName) {
+        // Templates for generating prompts
+        var promptTemplates = [
+            'As an end-user, report the issue "{shortDescription}" including any error messages you encountered.',
+            'As a support agent, write a work note detailing the initial troubleshooting steps taken for "{shortDescription}", including tools used and findings.',
+            'As the end-user, provide an update on whether the issue "{shortDescription}" persists after initial troubleshooting, and mention any new symptoms.',
+            'As a support agent, document additional diagnostic steps performed for "{shortDescription}", and note any anomalies observed.',
+            'As the end-user, supply additional details, including exact error codes and the impact on your work due to "{shortDescription}".',
+            'As a support agent, outline the resolution steps taken to address "{shortDescription}", and confirm if the issue is resolved.',
+            'As the end-user, confirm the resolution of "{shortDescription}" and express gratitude or any remaining concerns.'
+        ];
+
+        var entries = [];
+        // Get the name of the user
+        var userName = this._getUserName(endUserSysId);
+
+        for (var i = 0; i < promptTemplates.length; i++) {
+            // Generate the prompt by replacing placeholders
+            var prompt = promptTemplates[i]
+                .replace('{shortDescription}', shortDescription)
+                .replace('{ciName}', ciName || 'the affected system')
+                .replace('{userName}', userName);
+
+            // Generate unique content based on the prompt
+            var content = this._generateUniqueContent(prompt);
+            // Determine the entry type (comment or work note)
+            var entryType = i % 2 === 0 ? 'comment' : 'work_note';
+            // Determine the user (end user for comments, agent for work notes)
+            var user = entryType === 'comment' ? endUserSysId : agentUserSysId;
+            entries.push({ type: entryType, text: content, user: user });
+        }
+
+        return entries;
+    },
+
+    /**
+     * Retrieves a random configuration item associated with a business service.
+     * @param {String} businessServiceSysId - The sys_id of the business service.
+     * @returns {String} - The sys_id of a related configuration item.
+     */
+    _getRandomRelatedCi: function(businessServiceSysId) {
+        var ciSysIds = [];
+        var relGR = new GlideRecord('cmdb_rel_ci');
+        // Find relationships where the business service is either the parent or child
+        relGR.addQuery('parent', businessServiceSysId).addOrCondition('child', businessServiceSysId);
+        relGR.query();
+        while (relGR.next()) {
+            // If the business service is the parent, get the child CI
+            if (relGR.parent.sys_id.toString() === businessServiceSysId) {
+                ciSysIds.push(relGR.child.sys_id.toString());
+            } else {
+                // If the business service is the child, get the parent CI
+                ciSysIds.push(relGR.parent.sys_id.toString());
+            }
+        }
+        if (ciSysIds.length > 0) {
+            return ciSysIds[Math.floor(Math.random() * ciSysIds.length)];
+        } else {
+            // If no related CIs, pick any random CI
+            return this._getRandomRecordSysId('cmdb_ci');
+        }
+    },
+
+    /**
+     * Validates case creation parameters
+     * @param {String} caseType - The type of case
+     * @param {String} shortDescription - The description
+     * @returns {Boolean} - Whether inputs are valid
+     */
+    _validateCaseInputs: function(caseType, shortDescription) {
+        var validTypes = ['incident', 'csm_case', 'hr_case', 'healthcare_claim', 'change_request'];
+        
+        if (!caseType || !validTypes.includes(caseType)) {
+            gs.error('Invalid case type: ' + caseType);
+            return false;
+        }
+        
+        if (caseType !== 'healthcare_claim' && !shortDescription) {
+            gs.error('Short description required for case type: ' + caseType);
+            return false;
+        }
+        
+        return true;
+    },
+
     type: 'AbstractDataGenerator'
 };
