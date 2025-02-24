@@ -42,37 +42,26 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
         var tableName;
 
         try {
+            // Validate inputs using the parent class method
+            if (!this._validateCaseInputs(caseType, shortDescription)) {
+                return null;
+            }
+
             // Determine the table name based on case type
             switch (caseType) {
                 case 'incident':
-                    if (!shortDescription) {
-                        gs.error('Short description must be provided for incidents.');
-                        return null;
-                    }
                     tableName = 'incident';
                     break;
                 case 'csm_case':
-                    if (!shortDescription) {
-                        gs.error('Short description must be provided for CSM cases.');
-                        return null;
-                    }
                     tableName = 'sn_customerservice_case';
                     break;
                 case 'hr_case':
-                    if (!shortDescription) {
-                        gs.error('Short description must be provided for HR cases.');
-                        return null;
-                    }
                     tableName = 'sn_hr_core_case';
                     break;
                 case 'healthcare_claim':
                     tableName = 'sn_hcls_claim_header';
                     break;
                 case 'change_request':
-                    if (!shortDescription) {
-                        gs.error('Short description must be provided for change requests.');
-                        return null;
-                    }
                     tableName = 'change_request';
                     break;
                 default:
@@ -113,10 +102,22 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
 
                 if (caseSysId) {
                     // Generate entries (comments and work notes) for the case
-                    var entries = this._generateEntries(shortDescription);
-                    // Add comments and work notes to the case
+                    var ciName = this._getConfigurationItemName();
+                    var entries;
+                    
+                    // Use appropriate user IDs based on case type
+                    if (caseType === 'incident') {
+                        entries = this._generateEntries(shortDescription, this.INCIDENT_END_USER_SYSID, this.AGENT_USER_SYSID, ciName);
+                    } else if (caseType === 'csm_case') {
+                        entries = this._generateEntries(shortDescription, this.CSM_CONTACT_SYSID, this.CSM_AGENT_SYSID, ciName);
+                    } else if (caseType === 'hr_case') {
+                        entries = this._generateEntries(shortDescription, this.HR_CASE_OPENED_FOR_SYSID, this.AGENT_USER_SYSID, ciName);
+                    }
+                    
+                    // Add comments and work notes to the case using the parent class method
                     this._addCommentsAndWorkNotes(tableName, caseSysId, entries);
-                    // Add an attachment to the case
+                    
+                    // Add an attachment to the case using the parent class method
                     this._addAttachment(
                         tableName,
                         caseSysId,
@@ -140,32 +141,12 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
     },
 
     /**
-     * Creates a new record in the specified table with the given fields.
-     * @param {String} tableName - The name of the table to insert the record into.
-     * @param {Object} fields - An object containing field names and values to set on the record.
-     * @returns {String|null} - The sys_id of the created record, or null if failed.
-     */
-    _createCaseRecord: function(tableName, fields) {
-        var gr = new GlideRecord(tableName);
-        gr.initialize();
-        // Set field values from the fields object
-        for (var field in fields) {
-            gr.setValue(field, fields[field]);
-        }
-        var sysId = gr.insert();
-        if (!sysId) {
-            gs.error('Failed to insert record into ' + tableName + '. Error: ' + gr.getLastErrorMessage());
-        }
-        return sysId;
-    },
-
-    /**
      * Creates an incident with the specified short description.
      * @param {String} shortDescription - The short description of the incident.
      * @returns {String|null} - The sys_id of the created incident, or null if failed.
      */
     _createIncident: function(shortDescription) {
-        // Generate a detailed description for the incident
+        // Generate a detailed description for the incident using the parent class method
         var detailedDescription = this._generateDetailedDescription(shortDescription);
 
         var fields = {
@@ -184,7 +165,7 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
             opened_by: this.INCIDENT_END_USER_SYSID,
             location: this.INCIDENT_LOCATION_SYSID
         };
-        // Create the incident record
+        // Create the incident record using the parent class method
         return this._createCaseRecord('incident', fields);
     },
 
@@ -194,7 +175,7 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
      * @returns {String|null} - The sys_id of the created CSM case, or null if failed.
      */
     _createCSMCase: function(shortDescription) {
-        // Generate a detailed description for the CSM case
+        // Generate a detailed description for the CSM case using the parent class method
         var detailedDescription = this._generateDetailedDescription(shortDescription);
 
         var fields = {
@@ -208,7 +189,7 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
             assigned_to: this.CSM_AGENT_SYSID,
             opened_by: this.CSM_CONTACT_SYSID
         };
-        // Create the CSM case record
+        // Create the CSM case record using the parent class method
         return this._createCaseRecord('sn_customerservice_case', fields);
     },
 
@@ -218,7 +199,7 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
      * @returns {String|null} - The sys_id of the created HR case, or null if failed.
      */
     _createHRCase: function(shortDescription) {
-        // Generate a detailed description for the HR case
+        // Generate a detailed description for the HR case using the parent class method
         var detailedDescription = this._generateDetailedDescription(shortDescription);
 
         // Calculate due date (5 days from now)
@@ -236,7 +217,7 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
             due_date: dueDate,
             opened_by: this.HR_CASE_OPENED_FOR_SYSID
         };
-        // Create the HR case record
+        // Create the HR case record using the parent class method
         return this._createCaseRecord('sn_hr_core_case', fields);
     },
 
@@ -351,7 +332,7 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
             patient_pay_amount: patientPayAmount
         };
 
-        // Create the healthcare claim record
+        // Create the healthcare claim record using the parent class method
         return this._createCaseRecord('sn_hcls_claim_header', fields);
     },
 
@@ -436,160 +417,8 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
             end_date: endDate
         };
 
-        // Create the change request record
+        // Create the change request record using the parent class method
         return this._createCaseRecord('change_request', fields);
-    },
-
-    /**
-     * Retrieves a random configuration item associated with a business service.
-     * @param {String} businessServiceSysId - The sys_id of the business service.
-     * @returns {String} - The sys_id of a related configuration item.
-     */
-    _getRandomRelatedCi: function(businessServiceSysId) {
-        var ciSysIds = [];
-        var relGR = new GlideRecord('cmdb_rel_ci');
-        // Find relationships where the business service is either the parent or child
-        relGR.addQuery('parent', businessServiceSysId).addOrCondition('child', businessServiceSysId);
-        relGR.query();
-        while (relGR.next()) {
-            // If the business service is the parent, get the child CI
-            if (relGR.parent.sys_id.toString() === businessServiceSysId) {
-                ciSysIds.push(relGR.child.sys_id.toString());
-            } else {
-                // If the business service is the child, get the parent CI
-                ciSysIds.push(relGR.parent.sys_id.toString());
-            }
-        }
-        if (ciSysIds.length > 0) {
-            return ciSysIds[Math.floor(Math.random() * ciSysIds.length)];
-        } else {
-            // If no related CIs, pick any random CI
-            return this._getRandomRecordSysId('cmdb_ci');
-        }
-    },
-
-    /**
-     * Retrieves the name of a configuration item based on its sys_id.
-     * @param {String} ciSysId - The sys_id of the configuration item.
-     * @returns {String} - The name of the configuration item.
-     */
-    _getCiName: function(ciSysId) {
-        var ciGr = new GlideRecord('cmdb_ci');
-        if (ciGr.get(ciSysId)) {
-            return ciGr.getDisplayValue('name');
-        }
-        return 'the configuration item';
-    },
-
-    /**
-     * Retrieves a random user who is a member of the specified group.
-     * @param {String} groupSysId - The sys_id of the group.
-     * @returns {String} - The sys_id of a user in the group.
-     */
-    _getRandomUserInGroup: function(groupSysId) {
-        var userSysIds = [];
-        var groupMemberGR = new GlideRecord('sys_user_grmember');
-        groupMemberGR.addQuery('group', groupSysId);
-        groupMemberGR.query();
-        while (groupMemberGR.next()) {
-            userSysIds.push(groupMemberGR.getValue('user'));
-        }
-        if (userSysIds.length > 0) {
-            return userSysIds[Math.floor(Math.random() * userSysIds.length)];
-        } else {
-            // If no users in group, pick any random user
-            return this._getRandomRecordSysId('sys_user');
-        }
-    },
-
-    /**
-     * Generates a detailed description for the case based on the short description.
-     * @param {String} shortDescription - The short description of the case.
-     * @returns {String} - The generated detailed description.
-     */
-    _generateDetailedDescription: function(shortDescription) {
-        var prompt = 'Provide a detailed description for the issue: "' + shortDescription + '". Include possible causes and the impact on the user.';
-        return this._generateUniqueContent(prompt);
-    },
-
-    /**
-     * Generates entries (comments and work notes) for the case based on the short description.
-     * @param {String} shortDescription - The short description of the case.
-     * @returns {Array} - An array of entry objects containing type, text, and user.
-     */
-    _generateEntries: function(shortDescription) {
-        // Templates for generating prompts
-        var promptTemplates = [
-            'As an end-user, report the issue "{shortDescription}" including any error messages you encountered.',
-            'As a support agent, write a work note detailing the initial troubleshooting steps taken for "{shortDescription}", including tools used and findings.',
-            'As the end-user, provide an update on whether the issue "{shortDescription}" persists after initial troubleshooting, and mention any new symptoms.',
-            'As a support agent, document additional diagnostic steps performed for "{shortDescription}", and note any anomalies observed.',
-            'As the end-user, supply additional details, including exact error codes and the impact on your work due to "{shortDescription}".',
-            'As a support agent, outline the resolution steps taken to address "{shortDescription}", and confirm if the issue is resolved.',
-            'As the end-user, confirm the resolution of "{shortDescription}" and express gratitude or any remaining concerns.'
-        ];
-
-        var entries = [];
-        // Get the name of the configuration item and the user's name
-        var ciName = this._getConfigurationItemName();
-        var userName = this._getUserName(this.INCIDENT_END_USER_SYSID);
-
-        for (var i = 0; i < promptTemplates.length; i++) {
-            // Generate the prompt by replacing placeholders
-            var prompt = promptTemplates[i].replace('{shortDescription}', shortDescription).replace('{ciName}', ciName).replace('{userName}', userName);
-
-            // Generate unique content based on the prompt
-            var content = this._generateUniqueContent(prompt);
-            // Determine the entry type (comment or work note)
-            var entryType = i % 2 === 0 ? 'comment' : 'work_note';
-            // Determine the user (end user for comments, agent for work notes)
-            var user = entryType === 'comment' ? this.INCIDENT_END_USER_SYSID : this.AGENT_USER_SYSID;
-            entries.push({ type: entryType, text: content, user: user });
-        }
-
-        return entries;
-    },
-
-    /**
-     * Adds comments and work notes to the specified case.
-     * @param {String} tableName - The name of the table containing the case.
-     * @param {String} caseSysId - The sys_id of the case record.
-     * @param {Array} entries - An array of entries to add to the case.
-     */
-    _addCommentsAndWorkNotes: function(tableName, caseSysId, entries) {
-        for (var i = 0; i < entries.length; i++) {
-            var entry = entries[i];
-
-            // Impersonate the user
-            var impUser = new GlideImpersonate();
-            impUser.impersonate(entry.user);
-
-            var caseUpdate = new GlideRecord(tableName);
-            if (caseUpdate.get(caseSysId)) {
-                // Add the comment or work note to the case
-                if (entry.type === 'comment') {
-                    caseUpdate.comments = entry.text;
-                } else {
-                    caseUpdate.work_notes = entry.text;
-                }
-                caseUpdate.update();
-            }
-
-            // Revert impersonation
-            impUser.unimpersonate();
-        }
-    },
-
-    /**
-     * Adds an attachment to the specified case.
-     * @param {String} tableName - The name of the table containing the case.
-     * @param {String} caseSysId - The sys_id of the case record.
-     * @param {String} fileName - The name of the attachment file.
-     * @param {String} fileContent - The content of the attachment file.
-     */
-    _addAttachment: function(tableName, caseSysId, fileName, fileContent) {
-        var attachment = new GlideSysAttachment();
-        attachment.write(tableName, caseSysId, fileName, 'text/plain', fileContent);
     },
 
     /**
@@ -610,24 +439,7 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
      * @returns {String} - The name of the configuration item, or a default value if not found.
      */
     _getConfigurationItemName: function() {
-        var ciGr = new GlideRecord('cmdb_ci');
-        if (ciGr.get(this.CONFIGURATION_ITEM_SYSID)) {
-            return ciGr.getDisplayValue('name');
-        }
-        return 'the affected system';
-    },
-
-    /**
-     * Retrieves the name of the user based on their sys_id.
-     * @param {String} userSysId - The sys_id of the user.
-     * @returns {String} - The name of the user, or a default value if not found.
-     */
-    _getUserName: function(userSysId) {
-        var userGr = new GlideRecord('sys_user');
-        if (userGr.get(userSysId)) {
-            return userGr.getDisplayValue('name');
-        }
-        return 'the user';
+        return this._getCiName(this.CONFIGURATION_ITEM_SYSID);
     },
 
     /**
@@ -660,28 +472,6 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
      */
     _generateRandomBilledDrgCode: function() {
         return 'DRG' + this._generateRandomNumberString(3);
-    },
-
-    /**
-     * Validates case creation parameters
-     * @param {String} caseType - The type of case
-     * @param {String} shortDescription - The description
-     * @returns {Boolean} - Whether inputs are valid
-     */
-    _validateCaseInputs: function(caseType, shortDescription) {
-        var validTypes = ['incident', 'csm_case', 'hr_case', 'healthcare_claim', 'change_request'];
-        
-        if (!caseType || !validTypes.includes(caseType)) {
-            gs.error('Invalid case type: ' + caseType);
-            return false;
-        }
-        
-        if (caseType !== 'healthcare_claim' && !shortDescription) {
-            gs.error('Short description required for case type: ' + caseType);
-            return false;
-        }
-        
-        return true;
     },
 
     type: 'DataGenerator'
