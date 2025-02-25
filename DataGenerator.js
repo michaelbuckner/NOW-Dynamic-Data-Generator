@@ -267,7 +267,7 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
             category: 'Network',
             subcategory: 'Email',
             assignment_group: this.INCIDENT_ASSIGNMENT_GROUP_SYSID,
-            state: 1, // New
+            state: 2, // In Progress
             opened_by: this.INCIDENT_END_USER_SYSID,
             location: this.INCIDENT_LOCATION_SYSID
         };
