@@ -314,7 +314,7 @@ AbstractDataGenerator.prototype = {
      * @returns {Boolean} - Whether inputs are valid
      */
     _validateCaseInputs: function(caseType, shortDescription) {
-        var validTypes = ['incident', 'csm_case', 'hr_case', 'healthcare_claim', 'change_request'];
+        var validTypes = ['incident', 'csm_case', 'hr_case', 'healthcare_claim', 'change_request', 'knowledge_article'];
         
         if (!caseType || !validTypes.includes(caseType)) {
             gs.error('Invalid case type: ' + caseType);

@@ -1,4 +1,4 @@
-﻿# NOW-Dynamic-Data-Generator
+﻿﻿﻿﻿# NOW-Dynamic-Data-Generator
 
  ![image](https://github.com/user-attachments/assets/bc78048f-1040-49bd-b929-17feacf247bb) ![image](https://github.com/user-attachments/assets/a9888184-05cc-407b-bc07-64433eace7b0)
 
@@ -13,6 +13,7 @@ Supported Record:
 - CSM Cases
 - HR Cases
 - Healthcare Claims
+- Knowledge Articles
 
 There is also an additional script include for generating mass summarizies and emailing them.
 
@@ -135,6 +136,42 @@ var changeRequestSysId = dataGen.createCase('change_request');
 // Log the sys_id of the created change request
 gs.info('Created Change Request with sys_id: ' + changeRequestSysId);
 
+```
+
+### Basic Usage to create a Knowledge Article (e.g., Background Script)
+
+```javascript
+// Instantiate the DataGenerator class
+var dataGen = new DataGenerator();
+// Create a knowledge article with a short description
+var knowledgeArticleSysId = dataGen.createCase('knowledge_article', 'How to reset your password');
+
+// Log the sys_id of the created knowledge article
+gs.info('Created Knowledge Article with sys_id: ' + knowledgeArticleSysId);
+```
+
+### Basic Usage to create an Incident with a related KB Article (e.g., Background Script)
+
+```javascript
+// Instantiate the DataGenerator class
+var dataGen = new DataGenerator();
+// Create an incident and a related KB article with a short description
+var result = dataGen.createIncidentWithKB('Unable to connect to VPN from remote location');
+
+// Log the sys_ids of the created incident and KB article
+gs.info('Created Incident with sys_id: ' + result.incident);
+gs.info('Created KB Article with sys_id: ' + result.kb_article);
+
+// You can also access the created records directly
+var incidentGr = new GlideRecord('incident');
+if (incidentGr.get(result.incident)) {
+    gs.info('Incident short description: ' + incidentGr.short_description);
+}
+
+var kbGr = new GlideRecord('kb_knowledge');
+if (kbGr.get(result.kb_article)) {
+    gs.info('KB Article title: ' + kbGr.short_description);
+}
 ```
 
 ### Basic Usage to email a mass summary (e.g., Scheduled job)

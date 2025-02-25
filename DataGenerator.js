@@ -17,15 +17,110 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
     HR_SERVICE_SYSID: 'e228cde49f331200d9011977677fcf05', // Sys_id of the HR service
     AGENT_USER_SYSID: 'a8f98bb0eb32010045e1a5115206fe3a', // Sys_id of the agent user
     CHANGE_MODEL_SYSID: '007c4001c343101035ae3f52c1d3aeb2', // Sys_id of the change model
+    
+    // Knowledge article constants
+    KNOWLEDGE_BASE_SYSID: 'a7e8a78bff0221009b20ffffffffff17', // Sys_id of the knowledge base
+    KB_CATEGORY_SYSID: '387b2552ff0131009b20ffffffffffdf', // Sys_id of the knowledge category
+    KB_KNOWLEDGE_WORKFLOW_STATE: 'published', // Workflow state for knowledge articles
 
     initialize: function() {
         AbstractDataGenerator.prototype.initialize.call(this);
         // Additional initialization if needed
     },
+    
+    /**
+     * Creates an incident and a related knowledge base article based on the provided short description.
+     * @param {String} shortDescription - The short description for the incident and basis for the KB article.
+     * @returns {Object} - An object containing the sys_ids of the created incident and KB article.
+     */
+    createIncidentWithKB: function(shortDescription) {
+        if (!shortDescription) {
+            gs.error('Short description must be provided.');
+            return null;
+        }
+        
+        try {
+            // Step 1: Generate incident content
+            var detailedDescription = this._generateDetailedDescription(shortDescription);
+            var ciName = this._getConfigurationItemName();
+            var entries = this._generateEntries(shortDescription, this.INCIDENT_END_USER_SYSID, this.AGENT_USER_SYSID, ciName);
+            var errorLogContent = this._generateUniqueContent('Generate a log snippet for the issue: "' + shortDescription + '".');
+            
+            // Step 2: Generate KB article content
+            // Prepare incident details for KB article
+            var incidentDetails = {
+                shortDescription: shortDescription,
+                description: detailedDescription,
+                category: 'Network', // Using default values from _createIncident
+                subcategory: 'Email',
+                ciName: ciName
+            };
+            
+            // Generate KB article title
+            var kbTitlePrompt = 'Create a knowledge article title based on this incident: "' + 
+                incidentDetails.shortDescription + '". Make it concise and solution-oriented.';
+            var kbTitle = this._generateUniqueContent(kbTitlePrompt);
+            
+            // Generate KB article content
+            var kbPrompt = 'Create a comprehensive enterprise knowledge base article to help resolve the following issue: "' + 
+                incidentDetails.shortDescription + '". The issue involves ' + incidentDetails.ciName + 
+                ' and is categorized as ' + incidentDetails.category + 
+                (incidentDetails.subcategory ? ' / ' + incidentDetails.subcategory : '') + 
+                '. Include these sections: 1) Problem Description, 2) Symptoms, 3) Cause, 4) Resolution Steps, ' + 
+                '5) Prevention, and 6) Related Information. Format with HTML headings and lists. ' + 
+                'Use this additional context about the issue: ' + incidentDetails.description;
+                
+            var kbContent = this._generateUniqueContent(kbPrompt);
+            
+            // Step 3: Create the KB article first
+            var kbSysId = this._createEnterpriseKBArticle(kbTitle, kbContent, null); // Pass null for relatedIncidentSysId for now
+            
+            if (!kbSysId) {
+                gs.error('Failed to create KB article.');
+                // Continue with incident creation even if KB article fails
+            }
+            
+            // Step 4: Create the incident last
+            var incidentSysId = this._createIncident(shortDescription);
+            
+            if (!incidentSysId) {
+                gs.error('Failed to create incident.');
+                return {
+                    incident: null,
+                    kb_article: kbSysId
+                };
+            }
+            
+            // Step 5: Add comments, work notes, and attachment to the incident
+            this._addCommentsAndWorkNotes('incident', incidentSysId, entries);
+            
+            this._addAttachment(
+                'incident',
+                incidentSysId,
+                'error_log.txt',
+                errorLogContent
+            );
+            
+            // Step 6: If KB was created successfully, create relationship between KB and incident
+            if (kbSysId) {
+                this._createKBIncidentRelationship(kbSysId, incidentSysId);
+            }
+            
+            // Return both sys_ids
+            return {
+                incident: incidentSysId,
+                kb_article: kbSysId
+            };
+            
+        } catch (error) {
+            gs.error('Error in createIncidentWithKB: ' + error.message);
+            return null;
+        }
+    },
 
     /**
      * Creates a case of the specified type with the given short description.
-     * @param {String} caseType - The type of case to create ('incident', 'csm_case', 'hr_case', 'healthcare_claim', or 'change_request').
+     * @param {String} caseType - The type of case to create ('incident', 'csm_case', 'hr_case', 'healthcare_claim', 'change_request', or 'knowledge_article').
      * @param {String} [shortDescription] - The short description of the case (not required for healthcare_claim).
      * @param {Number} [numCases=1] - The number of cases to create (only applicable for healthcare_claim).
      * @returns {Array|String|null} - The sys_id(s) of the created case(s), or null if failed.
@@ -64,6 +159,9 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
                 case 'change_request':
                     tableName = 'change_request';
                     break;
+                case 'knowledge_article':
+                    tableName = 'kb_knowledge';
+                    break;
                 default:
                     gs.error('Invalid case type specified: ' + caseType);
                     return null;
@@ -84,6 +182,14 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
                     caseSysIds.push(caseSysId);
                 } else {
                     gs.error('Failed to create change request.');
+                    return null;
+                }
+            } else if (caseType === 'knowledge_article') {
+                var caseSysId = this._createKnowledgeArticle(shortDescription);
+                if (caseSysId) {
+                    caseSysIds.push(caseSysId);
+                } else {
+                    gs.error('Failed to create knowledge article.');
                     return null;
                 }
             } else {
@@ -472,6 +578,296 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
      */
     _generateRandomBilledDrgCode: function() {
         return 'DRG' + this._generateRandomNumberString(3);
+    },
+
+    /**
+     * Creates a knowledge article with the specified short description.
+     * @param {String} shortDescription - The short description of the knowledge article.
+     * @returns {String|null} - The sys_id of the created knowledge article, or null if failed.
+     * 
+     * NOTE: This method may generate a script error from the "Notify about article's checkout" business rule
+     * which tries to access current.article.getRefRecord() when it's undefined. This error is benign and
+     * does not affect the successful creation of the knowledge article. The error can be safely ignored.
+     */
+    _createKnowledgeArticle: function(shortDescription) {
+        try {
+            // Generate HTML content for the article using the parent class method
+            var textPrompt = 'Create a detailed knowledge article about "' + shortDescription + '". Include headings, paragraphs, and bullet points using basic HTML formatting.';
+            var htmlContent = this._generateUniqueContent(textPrompt);
+            
+            // Set valid_to date to 2100-01-01
+            var validToDate = new GlideDateTime();
+            validToDate.setDisplayValue('2100-01-01');
+            
+            // Create the kb_knowledge record
+            // Note: There may be a benign error from the "Notify about article's checkout" business rule
+            // which tries to access current.article.getRefRecord() when it's undefined.
+            // This error does not affect the successful creation of the knowledge article.
+            var fields = {
+                short_description: shortDescription,
+                text: htmlContent,
+                knowledge_base: this.KNOWLEDGE_BASE_SYSID,
+                kb_category: this.KB_CATEGORY_SYSID,
+                valid_to: validToDate,
+                workflow_state: this.KB_KNOWLEDGE_WORKFLOW_STATE
+            };
+            
+            // Create the knowledge article record using the parent class method
+            var sysId = this._createCaseRecord('kb_knowledge', fields);
+            
+            // Log success if the article was created
+            if (sysId) {
+                gs.info('Successfully created knowledge article with sys_id: ' + sysId);
+                
+                // Check for approvals and approve them
+                this._approveKnowledgeArticle(sysId);
+            }
+            
+            return sysId;
+        } catch (error) {
+            gs.error('Error in _createKnowledgeArticle: ' + error.message);
+            return null;
+        }
+    },
+    
+    /**
+     * Creates an enterprise-grade knowledge base article with enhanced formatting and metadata.
+     * @param {String} title - The title of the knowledge article.
+     * @param {String} content - The HTML content of the knowledge article.
+     * @param {String} relatedIncidentSysId - The sys_id of the related incident.
+     * @returns {String|null} - The sys_id of the created knowledge article, or null if failed.
+     */
+    _createEnterpriseKBArticle: function(title, content, relatedIncidentSysId) {
+        try {
+            // Set valid_to date to 2100-01-01
+            var validToDate = new GlideDateTime();
+            validToDate.setDisplayValue('2100-01-01');
+            
+            // Get the current date for the published date
+            var publishedDate = new GlideDateTime();
+            
+            // Create the kb_knowledge record
+            var fields = {
+                short_description: title,
+                text: content,
+                knowledge_base: this.KNOWLEDGE_BASE_SYSID,
+                kb_category: this.KB_CATEGORY_SYSID,
+                valid_to: validToDate,
+                workflow_state: this.KB_KNOWLEDGE_WORKFLOW_STATE, // 'published'
+                published: publishedDate,
+                author: this.AGENT_USER_SYSID,
+                roles: 'itil',  // Restrict to ITIL users
+                active: true,   // Ensure the article is active
+                direct: true    // Allow direct access to the article
+            };
+            
+            // Create the knowledge article record
+            var sysId = this._createCaseRecord('kb_knowledge', fields);
+            
+            if (sysId) {
+                gs.info('Successfully created enterprise KB article with sys_id: ' + sysId);
+                
+                // Explicitly publish the KB article
+                this._publishKBArticle(sysId);
+                
+                // Create a relationship between the KB article and the incident
+                if (relatedIncidentSysId) {
+                    this._createKBIncidentRelationship(sysId, relatedIncidentSysId);
+                }
+                
+                // Add keywords to the KB article
+                this._addKBKeywords(sysId, title);
+                
+                // Check for approvals and approve them
+                this._approveKnowledgeArticle(sysId);
+                
+                // Verify the article is published
+                this._verifyKBArticlePublished(sysId);
+            }
+            
+            return sysId;
+        } catch (error) {
+            gs.error('Error in _createEnterpriseKBArticle: ' + error.message);
+            return null;
+        }
+    },
+    
+    /**
+     * Explicitly publishes a knowledge article by setting necessary fields.
+     * @param {String} articleSysId - The sys_id of the knowledge article to publish.
+     */
+    _publishKBArticle: function(articleSysId) {
+        try {
+            var kbGr = new GlideRecord('kb_knowledge');
+            if (kbGr.get(articleSysId)) {
+                // Set all necessary fields for publication
+                kbGr.workflow_state = this.KB_KNOWLEDGE_WORKFLOW_STATE; // 'published'
+                kbGr.active = true;
+                
+                // Set the published date to now
+                var now = new GlideDateTime();
+                kbGr.published = now;
+                
+                // Update the record
+                kbGr.update();
+                gs.info('Successfully published knowledge article with sys_id: ' + articleSysId);
+            } else {
+                gs.error('Failed to find knowledge article with sys_id: ' + articleSysId + ' for publishing');
+            }
+        } catch (error) {
+            gs.error('Error in _publishKBArticle: ' + error.message);
+        }
+    },
+    
+    /**
+     * Verifies that a knowledge article is properly published.
+     * @param {String} articleSysId - The sys_id of the knowledge article to verify.
+     */
+    _verifyKBArticlePublished: function(articleSysId) {
+        try {
+            var kbGr = new GlideRecord('kb_knowledge');
+            if (kbGr.get(articleSysId)) {
+                if (kbGr.workflow_state == this.KB_KNOWLEDGE_WORKFLOW_STATE && kbGr.active == true) {
+                    gs.info('Verified knowledge article is published: ' + articleSysId);
+                } else {
+                    gs.warning('Knowledge article ' + articleSysId + ' may not be properly published. Current state: ' + 
+                              kbGr.workflow_state + ', Active: ' + kbGr.active);
+                    
+                    // Force publish again if needed
+                    if (kbGr.workflow_state != this.KB_KNOWLEDGE_WORKFLOW_STATE || !kbGr.active) {
+                        kbGr.workflow_state = this.KB_KNOWLEDGE_WORKFLOW_STATE;
+                        kbGr.active = true;
+                        kbGr.update();
+                        gs.info('Forced publication of knowledge article: ' + articleSysId);
+                    }
+                }
+            } else {
+                gs.error('Failed to find knowledge article with sys_id: ' + articleSysId + ' for verification');
+            }
+        } catch (error) {
+            gs.error('Error in _verifyKBArticlePublished: ' + error.message);
+        }
+    },
+    
+    /**
+     * Automatically approves a knowledge article by updating its approval record.
+     * @param {String} articleSysId - The sys_id of the knowledge article to approve.
+     */
+    _approveKnowledgeArticle: function(articleSysId) {
+        try {
+            // Find all approval records for this knowledge article
+            var approvalGr = new GlideRecord('sysapproval_approver');
+            approvalGr.addQuery('document_id', articleSysId);
+            approvalGr.query();
+            
+            var foundApprovals = false;
+            
+            while (approvalGr.next()) {
+                foundApprovals = true;
+                // Set the approval state to 'approved'
+                approvalGr.state = 'approved';
+                approvalGr.update();
+                gs.info('Successfully approved knowledge article approval record: ' + approvalGr.getUniqueValue());
+            }
+            
+            if (!foundApprovals) {
+                gs.info('No approval records found for knowledge article with sys_id: ' + articleSysId);
+                
+                // Check if we need to create an approval record and auto-approve it
+                var kbGr = new GlideRecord('kb_knowledge');
+                if (kbGr.get(articleSysId)) {
+                    if (kbGr.workflow_state != this.KB_KNOWLEDGE_WORKFLOW_STATE) {
+                        gs.info('Article not in published state. Setting to published state directly.');
+                        kbGr.workflow_state = this.KB_KNOWLEDGE_WORKFLOW_STATE;
+                        kbGr.update();
+                    }
+                }
+            }
+            
+            // Double-check the article's workflow state
+            var kbGr = new GlideRecord('kb_knowledge');
+            if (kbGr.get(articleSysId)) {
+                if (kbGr.workflow_state != this.KB_KNOWLEDGE_WORKFLOW_STATE) {
+                    gs.info('Article still not in published state after approval. Setting directly.');
+                    kbGr.workflow_state = this.KB_KNOWLEDGE_WORKFLOW_STATE;
+                    kbGr.update();
+                }
+            }
+        } catch (error) {
+            gs.error('Error in _approveKnowledgeArticle: ' + error.message);
+        }
+    },
+    
+    /**
+     * Creates a relationship between a knowledge article and an incident.
+     * @param {String} kbSysId - The sys_id of the knowledge article.
+     * @param {String} incidentSysId - The sys_id of the incident.
+     */
+    _createKBIncidentRelationship: function(kbSysId, incidentSysId) {
+        try {
+            var m2mGr = new GlideRecord('m2m_kb_task');
+            m2mGr.initialize();
+            m2mGr.kb_knowledge = kbSysId;
+            m2mGr.task = incidentSysId;
+            var relationshipSysId = m2mGr.insert();
+            
+            if (relationshipSysId) {
+                gs.info('Successfully created relationship between KB article and incident');
+            } else {
+                gs.error('Failed to create relationship between KB article and incident');
+            }
+        } catch (error) {
+            gs.error('Error in _createKBIncidentRelationship: ' + error.message);
+        }
+    },
+    
+    /**
+     * Adds keywords to a knowledge article based on its title.
+     * @param {String} kbSysId - The sys_id of the knowledge article.
+     * @param {String} title - The title of the knowledge article.
+     */
+    _addKBKeywords: function(kbSysId, title) {
+        try {
+            // Generate keywords based on the title
+            var keywordsPrompt = 'Generate 5-7 relevant technical keywords for a knowledge article titled: "' + 
+                title + '". Return only the keywords separated by commas, no explanations.';
+            var keywordsText = this._generateUniqueContent(keywordsPrompt);
+            
+            // Clean up the keywords
+            var keywords = [];
+            if (keywordsText) {
+                keywords = keywordsText.split(',').map(function(keyword) {
+                    return keyword.trim();
+                });
+            }
+            
+            // Get the KB article record
+            var kbGr = new GlideRecord('kb_knowledge');
+            if (kbGr.get(kbSysId)) {
+                // Add keywords directly to the KB article's meta field
+                var meta = '';
+                for (var i = 0; i < keywords.length; i++) {
+                    if (keywords[i]) {
+                        // Ensure the keyword is a single word with no spaces to avoid errors
+                        var safeKeyword = keywords[i].replace(/\s+/g, '_');
+                        if (meta) {
+                            meta += ', ';
+                        }
+                        meta += safeKeyword;
+                    }
+                }
+                
+                // Update the KB article with the keywords
+                if (meta) {
+                    kbGr.meta = meta;
+                    kbGr.update();
+                }
+            }
+            
+            gs.info('Successfully added keywords to KB article');
+        } catch (error) {
+            gs.error('Error in _addKBKeywords: ' + error.message);
+        }
     },
 
     type: 'DataGenerator'
