@@ -94,12 +94,9 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
             // Step 5: Add comments, work notes, and attachment to the incident
             this._addCommentsAndWorkNotes('incident', incidentSysId, entries);
             
-            this._addAttachment(
-                'incident',
-                incidentSysId,
-                'error_log.txt',
-                errorLogContent
-            );
+            // Add attachment directly instead of using _addAttachment
+            var attachment = new GlideSysAttachment();
+            attachment.write('incident', incidentSysId, 'error_log.txt', 'text/plain', errorLogContent);
             
             // Step 6: If KB was created successfully, create relationship between KB and incident
             if (kbSysId) {
@@ -223,11 +220,13 @@ DataGenerator.prototype = Object.extendsObject(AbstractDataGenerator, {
                     // Add comments and work notes to the case using the parent class method
                     this._addCommentsAndWorkNotes(tableName, caseSysId, entries);
                     
-                    // Add an attachment to the case using the parent class method
-                    this._addAttachment(
+                    // Add an attachment to the case directly
+                    var attachment = new GlideSysAttachment();
+                    attachment.write(
                         tableName,
                         caseSysId,
                         'error_log.txt',
+                        'text/plain',
                         this._generateUniqueContent('Generate a log snippet for the issue: "' + shortDescription + '".')
                     );
                     caseSysIds.push(caseSysId);

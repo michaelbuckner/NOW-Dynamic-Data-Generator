@@ -152,18 +152,6 @@ AbstractDataGenerator.prototype = {
     },
 
     /**
-     * Adds an attachment to the specified case.
-     * @param {String} tableName - The name of the table containing the case.
-     * @param {String} caseSysId - The sys_id of the case record.
-     * @param {String} fileName - The name of the attachment file.
-     * @param {String} fileContent - The content of the attachment file.
-     */
-    _addAttachment: function(tableName, caseSysId, fileName, fileContent) {
-        var attachment = new GlideSysAttachment();
-        attachment.write(tableName, caseSysId, fileName, 'text/plain', fileContent);
-    },
-
-    /**
      * Retrieves the name of a configuration item based on its sys_id.
      * @param {String} ciSysId - The sys_id of the configuration item.
      * @returns {String} - The name of the configuration item.
