@@ -115,10 +115,12 @@ NowDataGenerator.prototype = Object.extendsObject(NowAbstractDataGenerator, {
      * Creates a case of the specified type with the given short description.
      * @param {String} caseType - The type of case to create ('incident', 'csm_case', 'hr_case', 'healthcare_claim', 'change_request', or 'knowledge_article').
      * @param {String} [shortDescription] - The short description of the case (not required for healthcare_claim).
-     * @param {Number} [numCases=1] - The number of cases to create (only applicable for healthcare_claim).
+     * @param {Number|Object} [numCases=1] - The number of cases to create (only applicable for healthcare_claim) or options object.
+     * @param {Object} [options] - Additional options for case creation.
+     * @param {Boolean} [options.generateBadData] - For change_request, generates problematic plan data that would likely be flagged by an LLM.
      * @returns {Array|String|null} - The sys_id(s) of the created case(s), or null if failed.
      */
-    createCase: function(caseType, shortDescription, numCases) {
+    createCase: function(caseType, shortDescription, numCases, options) {
         if (!caseType) {
             gs.error('Case type must be provided.');
             return null;
@@ -170,7 +172,21 @@ NowDataGenerator.prototype = Object.extendsObject(NowAbstractDataGenerator, {
                     }
                 }
             } else if (caseType === 'change_request') {
-                var caseSysId = this._createChangeRequest(shortDescription);
+                // Handle options parameter
+                var generateBadData = false;
+                
+                // Check if numCases is actually an options object
+                if (typeof numCases === 'object' && numCases !== null) {
+                    options = numCases;
+                    numCases = 1;
+                }
+                
+                // Extract generateBadData from options if provided
+                if (options && typeof options === 'object' && options.generateBadData === true) {
+                    generateBadData = true;
+                }
+                
+                var caseSysId = this._createChangeRequest(shortDescription, generateBadData);
                 if (caseSysId) {
                     caseSysIds.push(caseSysId);
                 } else {
@@ -431,9 +447,10 @@ NowDataGenerator.prototype = Object.extendsObject(NowAbstractDataGenerator, {
     /**
      * Creates a change request with generated data.
      * @param {String} [shortDescription] - The short description of the change request. If not provided, one will be generated.
+     * @param {Boolean} [generateBadData=false] - If true, generates problematic plan data that would likely be flagged by an LLM.
      * @returns {String|null} - The sys_id of the created change request, or null if failed.
      */
-    _createChangeRequest: function(shortDescription) {
+    _createChangeRequest: function(shortDescription, generateBadData) {
         // Get a random user from sys_user
         var requestedBySysId = this._getRandomRecordSysId('sys_user');
 
@@ -472,21 +489,44 @@ NowDataGenerator.prototype = Object.extendsObject(NowAbstractDataGenerator, {
         // Get a random user from the above assignment group
         var assignedToSysId = this._getRandomUserInGroup(assignmentGroupSysId);
 
-        // Generate unique content for justification, implementation_plan, backout_plan, test_plan
-        var justificationPrompt = 'Provide a justification for the change request affecting "' + ciName + '".';
-        var justification = this._generateUniqueContent(justificationPrompt);
-
-        var implementationPlanPrompt = 'Outline an implementation plan for the change request affecting "' + ciName + '".';
-        var implementationPlan = this._generateUniqueContent(implementationPlanPrompt);
-
-        var riskImpactPrompt = 'Analyze the risks and impacts associated with the change request affecting "' + ciName + '".';
-        var riskImpactAnalysis = this._generateUniqueContent(riskImpactPrompt);
-
-        var backoutPlanPrompt = 'Describe a backout plan for the change request affecting "' + ciName + '".';
-        var backoutPlan = this._generateUniqueContent(backoutPlanPrompt);
-
-        var testPlanPrompt = 'Develop a test plan for the change request affecting "' + ciName + '".';
-        var testPlan = this._generateUniqueContent(testPlanPrompt);
+        // Generate content for justification, implementation_plan, backout_plan, test_plan
+        var justification, implementationPlan, riskImpactAnalysis, backoutPlan, testPlan;
+        
+        if (generateBadData) {
+            // Generate problematic content that would likely be flagged by an LLM
+            gs.info('Generating problematic change request data that would likely be flagged by an LLM');
+            
+            var justificationPrompt = 'Write a vague and incomplete justification for a change request that lacks specific details and business value. Make it problematic enough that it would be flagged by an LLM review.';
+            justification = this._generateUniqueContent(justificationPrompt);
+            
+            var implementationPlanPrompt = 'Create a poorly written implementation plan with missing steps, inconsistent timing, and no clear ownership of tasks. Make it problematic enough that it would be flagged by an LLM review.';
+            implementationPlan = this._generateUniqueContent(implementationPlanPrompt);
+            
+            var riskImpactPrompt = 'Write a risk and impact analysis that downplays serious risks, ignores potential service impacts, and lacks mitigation strategies. Make it problematic enough that it would be flagged by an LLM review.';
+            riskImpactAnalysis = this._generateUniqueContent(riskImpactPrompt);
+            
+            var backoutPlanPrompt = 'Create an inadequate backout plan that lacks specific steps, has timing issues, and doesn\'t fully address how to restore services. Make it problematic enough that it would be flagged by an LLM review.';
+            backoutPlan = this._generateUniqueContent(backoutPlanPrompt);
+            
+            var testPlanPrompt = 'Write a test plan with insufficient test cases, no clear success criteria, and missing validation steps. Make it problematic enough that it would be flagged by an LLM review.';
+            testPlan = this._generateUniqueContent(testPlanPrompt);
+        } else {
+            // Generate good quality content
+            var justificationPrompt = 'Provide a clear, detailed justification for the change request affecting "' + ciName + '". Include business value and expected benefits.';
+            justification = this._generateUniqueContent(justificationPrompt);
+            
+            var implementationPlanPrompt = 'Outline a comprehensive implementation plan for the change request affecting "' + ciName + '". Include specific steps, timing, and ownership.';
+            implementationPlan = this._generateUniqueContent(implementationPlanPrompt);
+            
+            var riskImpactPrompt = 'Analyze the risks and impacts associated with the change request affecting "' + ciName + '". Include mitigation strategies for each identified risk.';
+            riskImpactAnalysis = this._generateUniqueContent(riskImpactPrompt);
+            
+            var backoutPlanPrompt = 'Describe a detailed backout plan for the change request affecting "' + ciName + '". Include specific steps to restore services if needed.';
+            backoutPlan = this._generateUniqueContent(backoutPlanPrompt);
+            
+            var testPlanPrompt = 'Develop a comprehensive test plan for the change request affecting "' + ciName + '". Include test cases, success criteria, and validation steps.';
+            testPlan = this._generateUniqueContent(testPlanPrompt);
+        }
 
         // Generate future dates for start_date and end_date
         var startDate = new GlideDateTime();

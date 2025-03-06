@@ -1,4 +1,4 @@
-﻿﻿﻿﻿# NOW-Dynamic-Data-Generator
+﻿﻿﻿﻿﻿﻿# NOW-Dynamic-Data-Generator
 
  ![image](https://github.com/user-attachments/assets/bc78048f-1040-49bd-b929-17feacf247bb) ![image](https://github.com/user-attachments/assets/a9888184-05cc-407b-bc07-64433eace7b0)
 
@@ -154,7 +154,24 @@ gs.info('Created Change Request with sys_id: ' + changeRequestSysId);
 // Alternatively, you can provide a short description if desired
 var changeRequestWithDescSysId = dataGen.createCase('change_request', 'Upgrade server firmware');
 gs.info('Created Change Request with custom description, sys_id: ' + changeRequestWithDescSysId);
+
+// Create a "bad" change request with problematic plan data that would likely be flagged by an LLM
+var badChangeRequestSysId = dataGen.createCase('change_request', 'Server maintenance', { generateBadData: true });
+gs.info('Created problematic Change Request with sys_id: ' + badChangeRequestSysId);
+
+// You can also pass options as the third parameter
+var anotherBadChangeRequestSysId = dataGen.createCase('change_request', null, { generateBadData: true });
+gs.info('Created another problematic Change Request with sys_id: ' + anotherBadChangeRequestSysId);
 ```
+
+The `generateBadData` option creates change requests with problematic content in the following fields:
+- justification: Vague and incomplete, lacking specific details and business value
+- implementation_plan: Missing steps, inconsistent timing, and no clear ownership
+- risk_impact_analysis: Downplays risks, ignores service impacts, lacks mitigation strategies
+- backout_plan: Inadequate steps, timing issues, doesn't address service restoration
+- test_plan: Insufficient test cases, no clear success criteria, missing validation steps
+
+This is useful for testing ServiceNow's ability to detect problematic changes, such as when using an LLM to review change requests.
 
 ### Basic Usage to create a Knowledge Article (e.g., Background Script)
 
