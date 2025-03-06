@@ -1,4 +1,4 @@
-﻿﻿# NOW-Dynamic-Data-Generator
+﻿﻿﻿﻿# NOW-Dynamic-Data-Generator
 
  ![image](https://github.com/user-attachments/assets/bc78048f-1040-49bd-b929-17feacf247bb) ![image](https://github.com/user-attachments/assets/a9888184-05cc-407b-bc07-64433eace7b0)
 
@@ -145,12 +145,15 @@ gs.info('Created Healthcare Claims with sys_ids: ' + healthcareClaimsSysIds.join
 ```javascript
 // Instantiate the NowDataGenerator class
 var dataGen = new NowDataGenerator();
-// Create a change request
+// Create a change request (short description is optional, will be generated if not provided)
 var changeRequestSysId = dataGen.createCase('change_request');
 
 // Log the sys_id of the created change request
 gs.info('Created Change Request with sys_id: ' + changeRequestSysId);
 
+// Alternatively, you can provide a short description if desired
+var changeRequestWithDescSysId = dataGen.createCase('change_request', 'Upgrade server firmware');
+gs.info('Created Change Request with custom description, sys_id: ' + changeRequestWithDescSysId);
 ```
 
 ### Basic Usage to create a Knowledge Article (e.g., Background Script)

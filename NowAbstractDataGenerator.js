@@ -309,7 +309,9 @@ NowAbstractDataGenerator.prototype = {
             return false;
         }
         
-        if (caseType !== 'healthcare_claim' && !shortDescription) {
+        // Short description is not required for healthcare_claim and change_request
+        // For change_request, we can generate one if not provided
+        if (caseType !== 'healthcare_claim' && caseType !== 'change_request' && !shortDescription) {
             gs.error('Short description required for case type: ' + caseType);
             return false;
         }

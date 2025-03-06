@@ -170,7 +170,7 @@ NowDataGenerator.prototype = Object.extendsObject(NowAbstractDataGenerator, {
                     }
                 }
             } else if (caseType === 'change_request') {
-                var caseSysId = this._createChangeRequest();
+                var caseSysId = this._createChangeRequest(shortDescription);
                 if (caseSysId) {
                     caseSysIds.push(caseSysId);
                 } else {
@@ -430,9 +430,10 @@ NowDataGenerator.prototype = Object.extendsObject(NowAbstractDataGenerator, {
 
     /**
      * Creates a change request with generated data.
+     * @param {String} [shortDescription] - The short description of the change request. If not provided, one will be generated.
      * @returns {String|null} - The sys_id of the created change request, or null if failed.
      */
-    _createChangeRequest: function() {
+    _createChangeRequest: function(shortDescription) {
         // Get a random user from sys_user
         var requestedBySysId = this._getRandomRecordSysId('sys_user');
 
@@ -450,10 +451,17 @@ NowDataGenerator.prototype = Object.extendsObject(NowAbstractDataGenerator, {
         var risk = this._getRandomChoiceValue('change_request', 'risk');
         var impact = this._getRandomChoiceValue('change_request', 'impact');
 
-        // Generate unique content for short_description and description
+        // Get or generate short_description and description
         var ciName = this._getCiName(cmdbCiSysId);
-        var shortDescPrompt = 'Generate a short description for a change request affecting the service "' + ciName + '". Please keep it to a single sentence.';
-        var generatedShortDescription = this._generateUniqueContent(shortDescPrompt);
+        var finalShortDescription;
+        
+        // Use provided shortDescription if available, otherwise generate one
+        if (shortDescription) {
+            finalShortDescription = shortDescription;
+        } else {
+            var shortDescPrompt = 'Generate a short description for a change request affecting the service "' + ciName + '". Please keep it to a single sentence.';
+            finalShortDescription = this._generateUniqueContent(shortDescPrompt);
+        }
 
         var descPrompt = 'Provide a detailed description for a change request affecting the service "' + ciName + '". Include reasons and expected outcomes.';
         var description = this._generateUniqueContent(descPrompt);
@@ -495,7 +503,7 @@ NowDataGenerator.prototype = Object.extendsObject(NowAbstractDataGenerator, {
             priority: priority,
             risk: risk,
             impact: impact,
-            short_description: generatedShortDescription,
+            short_description: finalShortDescription,
             description: description,
             change_model: this.CHANGE_MODEL_SYSID,
             assignment_group: assignmentGroupSysId,
