@@ -1,0 +1,1052 @@
+{
+    "tableName": "incident",
+    "fields": [
+      {
+        "name": "actions_taken",
+        "type": "journal_input",
+        "label": "Actions taken",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "business_impact",
+        "type": "string",
+        "label": "Business impact",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "4000"
+      },
+      {
+        "name": "business_stc",
+        "type": "integer",
+        "label": "Business resolve time",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "calendar_stc",
+        "type": "integer",
+        "label": "Resolve time",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "caller_id",
+        "type": "reference",
+        "label": "Caller",
+        "isReference": true,
+        "referenceTable": "sys_user",
+        "isMandatory": false,
+        "maxLength": "32"
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "label": "Category",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "cause",
+        "type": "string",
+        "label": "Probable cause",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "4000"
+      },
+      {
+        "name": "caused_by",
+        "type": "reference",
+        "label": "Caused by Change",
+        "isReference": true,
+        "referenceTable": "change_request",
+        "isMandatory": false,
+        "maxLength": "32"
+      },
+      {
+        "name": "child_incidents",
+        "type": "integer",
+        "label": "Child Incidents",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "close_code",
+        "type": "string",
+        "label": "Close code",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "hold_reason",
+        "type": "integer",
+        "label": "On hold reason",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "incident_state",
+        "type": "integer",
+        "label": "Incident state",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "lessons_learned",
+        "type": "html",
+        "label": "Findings",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "65000"
+      },
+      {
+        "name": "major_incident_state",
+        "type": "string",
+        "label": "Major incident state",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "notify",
+        "type": "integer",
+        "label": "Notify",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "origin_id",
+        "type": "document_id",
+        "label": "Origin",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "32"
+      },
+      {
+        "name": "origin_table",
+        "type": "table_name",
+        "label": "Origin table",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "80"
+      },
+      {
+        "name": "overview",
+        "type": "html",
+        "label": "Overview",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "65000"
+      },
+      {
+        "name": "parent_incident",
+        "type": "reference",
+        "label": "Parent Incident",
+        "isReference": true,
+        "referenceTable": "incident",
+        "isMandatory": false,
+        "maxLength": "32"
+      },
+      {
+        "name": "problem_id",
+        "type": "reference",
+        "label": "Problem",
+        "isReference": true,
+        "referenceTable": "problem",
+        "isMandatory": false,
+        "maxLength": "32"
+      },
+      {
+        "name": "promoted_by",
+        "type": "reference",
+        "label": "Promoted by",
+        "isReference": true,
+        "referenceTable": "sys_user",
+        "isMandatory": false,
+        "maxLength": "32"
+      },
+      {
+        "name": "promoted_on",
+        "type": "glide_date_time",
+        "label": "Promoted",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "proposed_by",
+        "type": "reference",
+        "label": "Proposed by",
+        "isReference": true,
+        "referenceTable": "sys_user",
+        "isMandatory": false,
+        "maxLength": "32"
+      },
+      {
+        "name": "proposed_on",
+        "type": "glide_date_time",
+        "label": "Proposed",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "reopened_by",
+        "type": "reference",
+        "label": "Last reopened by",
+        "isReference": true,
+        "referenceTable": "sys_user",
+        "isMandatory": false,
+        "maxLength": "32"
+      },
+      {
+        "name": "reopened_time",
+        "type": "glide_date_time",
+        "label": "Last reopened at",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "reopen_count",
+        "type": "integer",
+        "label": "Reopen count",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "resolved_at",
+        "type": "glide_date_time",
+        "label": "Resolved",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "resolved_by",
+        "type": "reference",
+        "label": "Resolved by",
+        "isReference": true,
+        "referenceTable": "sys_user",
+        "isMandatory": false,
+        "maxLength": "32"
+      },
+      {
+        "name": "rfc",
+        "type": "reference",
+        "label": "Change Request",
+        "isReference": true,
+        "referenceTable": "change_request",
+        "isMandatory": false,
+        "maxLength": "32"
+      },
+      {
+        "name": "severity",
+        "type": "integer",
+        "label": "Severity",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "subcategory",
+        "type": "string",
+        "label": "Subcategory",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "40"
+      },
+      {
+        "name": "timeline",
+        "type": "html",
+        "label": "Timeline",
+        "isReference": false,
+        "referenceTable": null,
+        "isMandatory": false,
+        "maxLength": "1024000"
+      },
+      {
+        "name": "trigger_rule",
+        "type": "reference",
+        "label": "Trigger Rule",
+        "isReference": true,
+        "referenceTable": "major_incident_trigger_rule",
+        "isMandatory": false,
+        "maxLength": "32"
+      }
+    ],
+    "referenceFields": {
+      "caller_id": [
+        {
+          "sys_id": "5136503cc611227c0183e96598c4f706",
+          "display_value": "Guest"
+        },
+        {
+          "sys_id": "5137153cc611227c000bbd1bd8cd2005",
+          "display_value": "Fred Luddy"
+        },
+        {
+          "sys_id": "681ccaf9c0a8016400b98a06818d57c7",
+          "display_value": "Joe Employee"
+        },
+        {
+          "sys_id": "681b365ec0a80164000fb0b05854a0cd",
+          "display_value": "ITIL User"
+        },
+        {
+          "sys_id": "5137153cc611227c000bbd1bd8cd2006",
+          "display_value": "Rick Berzle"
+        },
+        {
+          "sys_id": "9ee1b13dc6112271007f9d0efdb69cd0",
+          "display_value": "Don Goodliffe"
+        },
+        {
+          "sys_id": "f298d2d2c611227b0106c6be7f154bc8",
+          "display_value": "Bow Ruggeri"
+        },
+        {
+          "sys_id": "46b87022a9fe198101a78787e40d7547",
+          "display_value": "Charlie Whitherspoon"
+        },
+        {
+          "sys_id": "46bac3d6a9fe1981005f299d979b8869",
+          "display_value": "Taylor Vreeland"
+        },
+        {
+          "sys_id": "46bbf3daa9fe1981001fd0ccdd391f83",
+          "display_value": "Ted Bozelle"
+        },
+        {
+          "sys_id": "46c1293aa9fe1981000dc753e75ebeee",
+          "display_value": "Carol Coughlin"
+        },
+        {
+          "sys_id": "46c32549a9fe198101a84f3c2036e26b",
+          "display_value": "Ted Keppel"
+        },
+        {
+          "sys_id": "46c4aeb7a9fe1981002bbd372644a37b",
+          "display_value": "David Dan"
+        },
+        {
+          "sys_id": "46c6f9efa9fe198101ddf5eed9adf6e7",
+          "display_value": "Bud Richman"
+        },
+        {
+          "sys_id": "46ca0887a9fe19810191e08e51927ebf",
+          "display_value": "Howard Johnson"
+        },
+        {
+          "sys_id": "46d14f04a9fe19810142e40c6b071512",
+          "display_value": "Wayne Webb"
+        },
+        {
+          "sys_id": "46d44a23a9fe19810012d100cca80666",
+          "display_value": "Beth Anglin"
+        },
+        {
+          "sys_id": "46d85d4aa9fe198101e36eb956587fe7",
+          "display_value": "Sam Sorokin"
+        },
+        {
+          "sys_id": "46d96f57a9fe198101947a9620895886",
+          "display_value": "Luke Wilson"
+        },
+        {
+          "sys_id": "47de9c73c61122930033f6521d1bb785",
+          "display_value": "Asset Manager"
+        }
+      ],
+      "caused_by": [
+        {
+          "sys_id": "b0e8555147810200e90d87e8dee4902c",
+          "display_value": "CHG0000020"
+        },
+        {
+          "sys_id": "aa0ad55147810200e90d87e8dee490e1",
+          "display_value": "CHG0000021"
+        },
+        {
+          "sys_id": "5d77b8da47410200e90d87e8dee49040",
+          "display_value": "CHG0000022"
+        },
+        {
+          "sys_id": "70ad699e47410200e90d87e8dee4907d",
+          "display_value": "CHG0000023"
+        },
+        {
+          "sys_id": "1766f1de47410200e90d87e8dee490f6",
+          "display_value": "CHG0000024"
+        },
+        {
+          "sys_id": "b4f675de47410200e90d87e8dee490cc",
+          "display_value": "CHG0000025"
+        },
+        {
+          "sys_id": "7b77f5de47410200e90d87e8dee490b8",
+          "display_value": "CHG0000026"
+        },
+        {
+          "sys_id": "543a39de47410200e90d87e8dee4908a",
+          "display_value": "CHG0000027"
+        },
+        {
+          "sys_id": "892eb11247810200e90d87e8dee4908f",
+          "display_value": "CHG0000028"
+        },
+        {
+          "sys_id": "2071a5d037310200f212cc028e41f107",
+          "display_value": "CHG0000030"
+        },
+        {
+          "sys_id": "30c1e5d037310200f212cc028e41f158",
+          "display_value": "CHG0000031"
+        },
+        {
+          "sys_id": "a0701a1037310200f212cc028e41f14d",
+          "display_value": "CHG0000032"
+        },
+        {
+          "sys_id": "a36ffb7137310200f212cc028e41f13d",
+          "display_value": "CHG0000033"
+        },
+        {
+          "sys_id": "12ffff7137310200f212cc028e41f175",
+          "display_value": "CHG0000034"
+        },
+        {
+          "sys_id": "baa1088237310200f212cc028e41f15c",
+          "display_value": "CHG0000035"
+        },
+        {
+          "sys_id": "0e01e67737310200f212cc028e41f1a8",
+          "display_value": "CHG0000036"
+        },
+        {
+          "sys_id": "2de5121347c12200e0ef563dbb9a71eb",
+          "display_value": "CHG0040001"
+        },
+        {
+          "sys_id": "eaf5d21347c12200e0ef563dbb9a7109",
+          "display_value": "CHG0040002"
+        },
+        {
+          "sys_id": "0126961347c12200e0ef563dbb9a717e",
+          "display_value": "CHG0040003"
+        },
+        {
+          "sys_id": "c286d61347c12200e0ef563dbb9a71df",
+          "display_value": "CHG0040004"
+        }
+      ],
+      "parent_incident": [
+        {
+          "sys_id": "8d6353eac0a8016400d8a125ca14fc1f",
+          "display_value": "INC0000007"
+        },
+        {
+          "sys_id": "46e482d9a9fe198101d3e3f3e2a14459",
+          "display_value": "INC0000017"
+        },
+        {
+          "sys_id": "d71da88ac0a801670061eabfe4b28f77",
+          "display_value": "INC0000054"
+        },
+        {
+          "sys_id": "a9e428cac61122760075710592216c58",
+          "display_value": "INC0000048"
+        },
+        {
+          "sys_id": "85071a1347c12200e0ef563dbb9a71c1",
+          "display_value": "INC0000059"
+        },
+        {
+          "sys_id": "78271e1347c12200e0ef563dbb9a7109",
+          "display_value": "INC0000057"
+        },
+        {
+          "sys_id": "965c9e5347c12200e0ef563dbb9a7156",
+          "display_value": "INC0000058"
+        },
+        {
+          "sys_id": "1c741bd70b2322007518478d83673af3",
+          "display_value": "INC0000060"
+        },
+        {
+          "sys_id": "57af7aec73d423002728660c4cf6a71c",
+          "display_value": "INC0009009"
+        },
+        {
+          "sys_id": "9fffc328731823002728660c4cf6a742",
+          "display_value": "INC0009003"
+        },
+        {
+          "sys_id": "ed92e8d173d023002728660c4cf6a7bc",
+          "display_value": "INC0009005"
+        },
+        {
+          "sys_id": "e329de99731423002728660c4cf6a73c",
+          "display_value": "INC0009004"
+        },
+        {
+          "sys_id": "a623cdb073a023002728660c4cf6a768",
+          "display_value": "INC0009001"
+        },
+        {
+          "sys_id": "1c832706732023002728660c4cf6a7b9",
+          "display_value": "INC0009002"
+        },
+        {
+          "sys_id": "f12ca184735123002728660c4cf6a7ef",
+          "display_value": "INC0007001"
+        },
+        {
+          "sys_id": "ff4c21c4735123002728660c4cf6a758",
+          "display_value": "INC0007002"
+        },
+        {
+          "sys_id": "a83820b58f723300e7e16c7827bdeed2",
+          "display_value": "INC0008111"
+        },
+        {
+          "sys_id": "552c48888c033300964f4932b03eb092",
+          "display_value": "INC0008112"
+        },
+        {
+          "sys_id": "a2496c05731110107418660c4cf6a711",
+          "display_value": "INC0001990"
+        },
+        {
+          "sys_id": "0c5f3cece1b12010f877971dea0b1449",
+          "display_value": "INC0008001"
+        }
+      ],
+      "problem_id": [
+        {
+          "sys_id": "62304320731823002728660c4cf6a7e8",
+          "display_value": "PRB0007601"
+        },
+        {
+          "sys_id": "6632130c730123002728660c4cf6a734",
+          "display_value": "PRB0001002"
+        },
+        {
+          "sys_id": "a1e0f770734123002728660c4cf6a745",
+          "display_value": "PRB0001001"
+        },
+        {
+          "sys_id": "9ae30b6d730123002728660c4cf6a736",
+          "display_value": "PRB0001000"
+        },
+        {
+          "sys_id": "9d3a266ac6112287004e37fb2ceb0133",
+          "display_value": "PRB0000007"
+        },
+        {
+          "sys_id": "9d3d3b85c61122870138f3d1472bba01",
+          "display_value": "PRB0000002"
+        },
+        {
+          "sys_id": "9d4f87a3c6112287010ed0a5ccdcba04",
+          "display_value": "PRB0000010"
+        },
+        {
+          "sys_id": "46eaa7c9a9fe198100bbe282da0d4b7d",
+          "display_value": "PRB0000001"
+        },
+        {
+          "sys_id": "46fb0230a9fe198101a23f6712475e11",
+          "display_value": "PRB0000008"
+        },
+        {
+          "sys_id": "46fb9e31a9fe198101492060c2a4f8cb",
+          "display_value": "PRB0000003"
+        },
+        {
+          "sys_id": "471a5450a9fe198101f2054169e75bf4",
+          "display_value": "PRB0000004"
+        },
+        {
+          "sys_id": "a9e4890bc6112276003d7a5a5c774a74",
+          "display_value": "PRB0000006"
+        },
+        {
+          "sys_id": "04ce72c9c0a8016600b5b7f75ac67b5b",
+          "display_value": "PRB0000050"
+        },
+        {
+          "sys_id": "d7296d02c0a801670085e737da016e70",
+          "display_value": "PRB0000011"
+        },
+        {
+          "sys_id": "05001913c0a8016600161851785e5219",
+          "display_value": "PRB0000051"
+        },
+        {
+          "sys_id": "05147c3ec0a8016600da5b1a92269b3d",
+          "display_value": "PRB0000032"
+        },
+        {
+          "sys_id": "05164252c0a80166006452a56ccd08a9",
+          "display_value": "PRB0000053"
+        },
+        {
+          "sys_id": "0518c160c0a801660073dc0189282aaf",
+          "display_value": "PRB0000029"
+        },
+        {
+          "sys_id": "051e8f6cc0a8016600cdf7fd19e10414",
+          "display_value": "PRB0000055"
+        },
+        {
+          "sys_id": "0d036ce4532023004247ddeeff7b12a8",
+          "display_value": "PRB0000105"
+        }
+      ],
+      "promoted_by": [
+        {
+          "sys_id": "5136503cc611227c0183e96598c4f706",
+          "display_value": "Guest"
+        },
+        {
+          "sys_id": "5137153cc611227c000bbd1bd8cd2005",
+          "display_value": "Fred Luddy"
+        },
+        {
+          "sys_id": "681ccaf9c0a8016400b98a06818d57c7",
+          "display_value": "Joe Employee"
+        },
+        {
+          "sys_id": "681b365ec0a80164000fb0b05854a0cd",
+          "display_value": "ITIL User"
+        },
+        {
+          "sys_id": "5137153cc611227c000bbd1bd8cd2006",
+          "display_value": "Rick Berzle"
+        },
+        {
+          "sys_id": "9ee1b13dc6112271007f9d0efdb69cd0",
+          "display_value": "Don Goodliffe"
+        },
+        {
+          "sys_id": "f298d2d2c611227b0106c6be7f154bc8",
+          "display_value": "Bow Ruggeri"
+        },
+        {
+          "sys_id": "46b87022a9fe198101a78787e40d7547",
+          "display_value": "Charlie Whitherspoon"
+        },
+        {
+          "sys_id": "46bac3d6a9fe1981005f299d979b8869",
+          "display_value": "Taylor Vreeland"
+        },
+        {
+          "sys_id": "46bbf3daa9fe1981001fd0ccdd391f83",
+          "display_value": "Ted Bozelle"
+        },
+        {
+          "sys_id": "46c1293aa9fe1981000dc753e75ebeee",
+          "display_value": "Carol Coughlin"
+        },
+        {
+          "sys_id": "46c32549a9fe198101a84f3c2036e26b",
+          "display_value": "Ted Keppel"
+        },
+        {
+          "sys_id": "46c4aeb7a9fe1981002bbd372644a37b",
+          "display_value": "David Dan"
+        },
+        {
+          "sys_id": "46c6f9efa9fe198101ddf5eed9adf6e7",
+          "display_value": "Bud Richman"
+        },
+        {
+          "sys_id": "46ca0887a9fe19810191e08e51927ebf",
+          "display_value": "Howard Johnson"
+        },
+        {
+          "sys_id": "46d14f04a9fe19810142e40c6b071512",
+          "display_value": "Wayne Webb"
+        },
+        {
+          "sys_id": "46d44a23a9fe19810012d100cca80666",
+          "display_value": "Beth Anglin"
+        },
+        {
+          "sys_id": "46d85d4aa9fe198101e36eb956587fe7",
+          "display_value": "Sam Sorokin"
+        },
+        {
+          "sys_id": "46d96f57a9fe198101947a9620895886",
+          "display_value": "Luke Wilson"
+        },
+        {
+          "sys_id": "47de9c73c61122930033f6521d1bb785",
+          "display_value": "Asset Manager"
+        }
+      ],
+      "proposed_by": [
+        {
+          "sys_id": "5136503cc611227c0183e96598c4f706",
+          "display_value": "Guest"
+        },
+        {
+          "sys_id": "5137153cc611227c000bbd1bd8cd2005",
+          "display_value": "Fred Luddy"
+        },
+        {
+          "sys_id": "681ccaf9c0a8016400b98a06818d57c7",
+          "display_value": "Joe Employee"
+        },
+        {
+          "sys_id": "681b365ec0a80164000fb0b05854a0cd",
+          "display_value": "ITIL User"
+        },
+        {
+          "sys_id": "5137153cc611227c000bbd1bd8cd2006",
+          "display_value": "Rick Berzle"
+        },
+        {
+          "sys_id": "9ee1b13dc6112271007f9d0efdb69cd0",
+          "display_value": "Don Goodliffe"
+        },
+        {
+          "sys_id": "f298d2d2c611227b0106c6be7f154bc8",
+          "display_value": "Bow Ruggeri"
+        },
+        {
+          "sys_id": "46b87022a9fe198101a78787e40d7547",
+          "display_value": "Charlie Whitherspoon"
+        },
+        {
+          "sys_id": "46bac3d6a9fe1981005f299d979b8869",
+          "display_value": "Taylor Vreeland"
+        },
+        {
+          "sys_id": "46bbf3daa9fe1981001fd0ccdd391f83",
+          "display_value": "Ted Bozelle"
+        },
+        {
+          "sys_id": "46c1293aa9fe1981000dc753e75ebeee",
+          "display_value": "Carol Coughlin"
+        },
+        {
+          "sys_id": "46c32549a9fe198101a84f3c2036e26b",
+          "display_value": "Ted Keppel"
+        },
+        {
+          "sys_id": "46c4aeb7a9fe1981002bbd372644a37b",
+          "display_value": "David Dan"
+        },
+        {
+          "sys_id": "46c6f9efa9fe198101ddf5eed9adf6e7",
+          "display_value": "Bud Richman"
+        },
+        {
+          "sys_id": "46ca0887a9fe19810191e08e51927ebf",
+          "display_value": "Howard Johnson"
+        },
+        {
+          "sys_id": "46d14f04a9fe19810142e40c6b071512",
+          "display_value": "Wayne Webb"
+        },
+        {
+          "sys_id": "46d44a23a9fe19810012d100cca80666",
+          "display_value": "Beth Anglin"
+        },
+        {
+          "sys_id": "46d85d4aa9fe198101e36eb956587fe7",
+          "display_value": "Sam Sorokin"
+        },
+        {
+          "sys_id": "46d96f57a9fe198101947a9620895886",
+          "display_value": "Luke Wilson"
+        },
+        {
+          "sys_id": "47de9c73c61122930033f6521d1bb785",
+          "display_value": "Asset Manager"
+        }
+      ],
+      "reopened_by": [
+        {
+          "sys_id": "5136503cc611227c0183e96598c4f706",
+          "display_value": "Guest"
+        },
+        {
+          "sys_id": "5137153cc611227c000bbd1bd8cd2005",
+          "display_value": "Fred Luddy"
+        },
+        {
+          "sys_id": "681ccaf9c0a8016400b98a06818d57c7",
+          "display_value": "Joe Employee"
+        },
+        {
+          "sys_id": "681b365ec0a80164000fb0b05854a0cd",
+          "display_value": "ITIL User"
+        },
+        {
+          "sys_id": "5137153cc611227c000bbd1bd8cd2006",
+          "display_value": "Rick Berzle"
+        },
+        {
+          "sys_id": "9ee1b13dc6112271007f9d0efdb69cd0",
+          "display_value": "Don Goodliffe"
+        },
+        {
+          "sys_id": "f298d2d2c611227b0106c6be7f154bc8",
+          "display_value": "Bow Ruggeri"
+        },
+        {
+          "sys_id": "46b87022a9fe198101a78787e40d7547",
+          "display_value": "Charlie Whitherspoon"
+        },
+        {
+          "sys_id": "46bac3d6a9fe1981005f299d979b8869",
+          "display_value": "Taylor Vreeland"
+        },
+        {
+          "sys_id": "46bbf3daa9fe1981001fd0ccdd391f83",
+          "display_value": "Ted Bozelle"
+        },
+        {
+          "sys_id": "46c1293aa9fe1981000dc753e75ebeee",
+          "display_value": "Carol Coughlin"
+        },
+        {
+          "sys_id": "46c32549a9fe198101a84f3c2036e26b",
+          "display_value": "Ted Keppel"
+        },
+        {
+          "sys_id": "46c4aeb7a9fe1981002bbd372644a37b",
+          "display_value": "David Dan"
+        },
+        {
+          "sys_id": "46c6f9efa9fe198101ddf5eed9adf6e7",
+          "display_value": "Bud Richman"
+        },
+        {
+          "sys_id": "46ca0887a9fe19810191e08e51927ebf",
+          "display_value": "Howard Johnson"
+        },
+        {
+          "sys_id": "46d14f04a9fe19810142e40c6b071512",
+          "display_value": "Wayne Webb"
+        },
+        {
+          "sys_id": "46d44a23a9fe19810012d100cca80666",
+          "display_value": "Beth Anglin"
+        },
+        {
+          "sys_id": "46d85d4aa9fe198101e36eb956587fe7",
+          "display_value": "Sam Sorokin"
+        },
+        {
+          "sys_id": "46d96f57a9fe198101947a9620895886",
+          "display_value": "Luke Wilson"
+        },
+        {
+          "sys_id": "47de9c73c61122930033f6521d1bb785",
+          "display_value": "Asset Manager"
+        }
+      ],
+      "resolved_by": [
+        {
+          "sys_id": "5136503cc611227c0183e96598c4f706",
+          "display_value": "Guest"
+        },
+        {
+          "sys_id": "5137153cc611227c000bbd1bd8cd2005",
+          "display_value": "Fred Luddy"
+        },
+        {
+          "sys_id": "681ccaf9c0a8016400b98a06818d57c7",
+          "display_value": "Joe Employee"
+        },
+        {
+          "sys_id": "681b365ec0a80164000fb0b05854a0cd",
+          "display_value": "ITIL User"
+        },
+        {
+          "sys_id": "5137153cc611227c000bbd1bd8cd2006",
+          "display_value": "Rick Berzle"
+        },
+        {
+          "sys_id": "9ee1b13dc6112271007f9d0efdb69cd0",
+          "display_value": "Don Goodliffe"
+        },
+        {
+          "sys_id": "f298d2d2c611227b0106c6be7f154bc8",
+          "display_value": "Bow Ruggeri"
+        },
+        {
+          "sys_id": "46b87022a9fe198101a78787e40d7547",
+          "display_value": "Charlie Whitherspoon"
+        },
+        {
+          "sys_id": "46bac3d6a9fe1981005f299d979b8869",
+          "display_value": "Taylor Vreeland"
+        },
+        {
+          "sys_id": "46bbf3daa9fe1981001fd0ccdd391f83",
+          "display_value": "Ted Bozelle"
+        },
+        {
+          "sys_id": "46c1293aa9fe1981000dc753e75ebeee",
+          "display_value": "Carol Coughlin"
+        },
+        {
+          "sys_id": "46c32549a9fe198101a84f3c2036e26b",
+          "display_value": "Ted Keppel"
+        },
+        {
+          "sys_id": "46c4aeb7a9fe1981002bbd372644a37b",
+          "display_value": "David Dan"
+        },
+        {
+          "sys_id": "46c6f9efa9fe198101ddf5eed9adf6e7",
+          "display_value": "Bud Richman"
+        },
+        {
+          "sys_id": "46ca0887a9fe19810191e08e51927ebf",
+          "display_value": "Howard Johnson"
+        },
+        {
+          "sys_id": "46d14f04a9fe19810142e40c6b071512",
+          "display_value": "Wayne Webb"
+        },
+        {
+          "sys_id": "46d44a23a9fe19810012d100cca80666",
+          "display_value": "Beth Anglin"
+        },
+        {
+          "sys_id": "46d85d4aa9fe198101e36eb956587fe7",
+          "display_value": "Sam Sorokin"
+        },
+        {
+          "sys_id": "46d96f57a9fe198101947a9620895886",
+          "display_value": "Luke Wilson"
+        },
+        {
+          "sys_id": "47de9c73c61122930033f6521d1bb785",
+          "display_value": "Asset Manager"
+        }
+      ],
+      "rfc": [
+        {
+          "sys_id": "b0e8555147810200e90d87e8dee4902c",
+          "display_value": "CHG0000020"
+        },
+        {
+          "sys_id": "aa0ad55147810200e90d87e8dee490e1",
+          "display_value": "CHG0000021"
+        },
+        {
+          "sys_id": "5d77b8da47410200e90d87e8dee49040",
+          "display_value": "CHG0000022"
+        },
+        {
+          "sys_id": "70ad699e47410200e90d87e8dee4907d",
+          "display_value": "CHG0000023"
+        },
+        {
+          "sys_id": "1766f1de47410200e90d87e8dee490f6",
+          "display_value": "CHG0000024"
+        },
+        {
+          "sys_id": "b4f675de47410200e90d87e8dee490cc",
+          "display_value": "CHG0000025"
+        },
+        {
+          "sys_id": "7b77f5de47410200e90d87e8dee490b8",
+          "display_value": "CHG0000026"
+        },
+        {
+          "sys_id": "543a39de47410200e90d87e8dee4908a",
+          "display_value": "CHG0000027"
+        },
+        {
+          "sys_id": "892eb11247810200e90d87e8dee4908f",
+          "display_value": "CHG0000028"
+        },
+        {
+          "sys_id": "2071a5d037310200f212cc028e41f107",
+          "display_value": "CHG0000030"
+        },
+        {
+          "sys_id": "30c1e5d037310200f212cc028e41f158",
+          "display_value": "CHG0000031"
+        },
+        {
+          "sys_id": "a0701a1037310200f212cc028e41f14d",
+          "display_value": "CHG0000032"
+        },
+        {
+          "sys_id": "a36ffb7137310200f212cc028e41f13d",
+          "display_value": "CHG0000033"
+        },
+        {
+          "sys_id": "12ffff7137310200f212cc028e41f175",
+          "display_value": "CHG0000034"
+        },
+        {
+          "sys_id": "baa1088237310200f212cc028e41f15c",
+          "display_value": "CHG0000035"
+        },
+        {
+          "sys_id": "0e01e67737310200f212cc028e41f1a8",
+          "display_value": "CHG0000036"
+        },
+        {
+          "sys_id": "2de5121347c12200e0ef563dbb9a71eb",
+          "display_value": "CHG0040001"
+        },
+        {
+          "sys_id": "eaf5d21347c12200e0ef563dbb9a7109",
+          "display_value": "CHG0040002"
+        },
+        {
+          "sys_id": "0126961347c12200e0ef563dbb9a717e",
+          "display_value": "CHG0040003"
+        },
+        {
+          "sys_id": "c286d61347c12200e0ef563dbb9a71df",
+          "display_value": "CHG0040004"
+        }
+      ],
+      "trigger_rule": []
+    }
+  }

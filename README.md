@@ -1,13 +1,17 @@
-﻿﻿﻿﻿﻿﻿# NOW-Dynamic-Data-Generator
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# NOW-Dynamic-Data-Generator
 
- ![image](https://github.com/user-attachments/assets/bc78048f-1040-49bd-b929-17feacf247bb) ![image](https://github.com/user-attachments/assets/a9888184-05cc-407b-bc07-64433eace7b0)
+![image](https://github.com/user-attachments/assets/bc78048f-1040-49bd-b929-17feacf247bb) ![image](https://github.com/user-attachments/assets/a9888184-05cc-407b-bc07-64433eace7b0)
 
+This project consists of two main components:
 
+1. **NowDataGenerator**: A ServiceNow script that automates the creation of various types of records with AI-generated content using the NOW Assist Generate Content skill.
+2. **Bulk Data Generator**: A utility for generating large quantities of data (10K+ records) for ServiceNow tables.
 
+# Part 1: NowDataGenerator
 
 This script includes a NowDataGenerator class for ServiceNow that automates the creation of various types of records with AI-generated content using the NOW Assist Generate Content skill.
 
-Supported Record:
+## Supported Record Types
 - Incidents
 - Changes
 - CSM Cases
@@ -234,18 +238,212 @@ You can customize the NowDataGenerator by modifying the following:
 - Modify the `_createIncident`, `_createCSMCase`, and `_createHRCase` methods to include additional fields or logic specific to your needs.
 - Adjust the prompt templates in the `_generateEntries` method to generate different types of content.
 
-## Important Notes
+# Part 2: Bulk Data Generator
 
-- Attachment functionality has been removed from all classes. If you need to add attachments to records, you will need to implement this functionality separately.
+A utility for generating bulk data (10K+ records) for ServiceNow tables. This component consists of:
+
+1. **ServiceNow Field Information Gatherer**: A ServiceNow script that extracts field information for a specified table, including field types and reference values.
+2. **Bulk Data Generator**: A Node.js program that generates large quantities of data based on the gathered field information and outputs it to a CSV file for import into ServiceNow.
+
+## Features
+
+- Generate 10K+ records with realistic data for ServiceNow tables
+- Focused implementation for incident records (with case records coming soon)
+- Hard-coded reference and choice values for consistent data generation
+- OpenRouter LLM integration for generating realistic short descriptions and detailed descriptions
+- Optimized for performance with batch processing
+- CSV output for easy import into ServiceNow
+
+## Prerequisites
+
+### For Bulk Data Generator
+- Node.js 14.x or higher
+- npm (Node Package Manager)
+- OpenRouter API key (sign up at https://openrouter.ai/)
+
+## Installation
+
+1. Clone this repository or download the files.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set your OpenRouter API key as an environment variable:
+   ```bash
+   # Unix/Linux/Mac
+   export OPENROUTER_API_KEY=your-api-key-here
+   
+   # Windows
+   set OPENROUTER_API_KEY=your-api-key-here
+   ```
+
+## Usage
+
+### Testing the OpenRouter Integration
+
+Before generating a large dataset, you can test the OpenRouter integration:
+
+```bash
+node test-openrouter.js [model] [apiKey]
+```
+
+This will generate sample incident descriptions for different categories and configuration items, allowing you to verify that the OpenRouter integration is working correctly.
+
+### Generating Bulk Data
+
+Run the Bulk Data Generator to create incident records:
+
+```bash
+node BulkDataGenerator.js --output=bulk-data.csv --count=10000 --apiKey=your-api-key
+```
+
+Options:
+- `--output`: Path to the output CSV file (default: bulk-data.csv)
+- `--count`: Number of records to generate (default: 10000)
+- `--batch`: Batch size for processing (default: 1000)
+- `--table`: Table to generate data for (default: incident)
+- `--model`: OpenRouter model to use (default: openai/gpt-3.5-turbo)
+- `--apiKey`: Your OpenRouter API key
+
+You can also use the provided scripts for convenience:
+
+```bash
+# Unix/Linux/Mac
+./generate-sample-data.sh [model] [apiKey] [table] [count]
+
+# Windows
+generate-sample-data.bat [model] [apiKey] [table] [count]
+```
+
+### Import Data into ServiceNow
+
+1. In your ServiceNow instance, navigate to **System Import Sets** > **Load Data**.
+2. Upload the generated CSV file.
+3. Configure the import set to map the CSV columns to the appropriate fields in the target table.
+4. Run the import.
+
+### Generated Fields for Incident Records
+
+The generator creates incident records with the following fields:
+
+- **number**: Unique incident number (e.g., INC0010001)
+- **caller_id**: Reference to a user in the sys_user table
+- **category**: IT service category (e.g., Network, Hardware, Software)
+- **subcategory**: Subcategory related to the category (e.g., VPN, Laptop, Application)
+- **business_service**: Reference to a business service in the cmdb_ci_service table
+- **service_offering**: Reference to a service offering in the service_offering table
+- **cmdb_ci**: Reference to a configuration item in the cmdb_ci table
+- **short_description**: AI-generated concise description of the incident
+- **description**: AI-generated detailed description that elaborates on the short description
+- **contact_type**: Method of contact (e.g., Email, Phone, Self-service)
+- **state**: Incident state (1-New, 2-In Progress, etc.)
+- **impact**: Impact level (1-High, 2-Medium, 3-Low)
+- **urgency**: Urgency level (1-High, 2-Medium, 3-Low)
+- **priority**: Calculated priority based on impact and urgency
+- **assignment_group**: Reference to a group in the sys_user_group table
+- **assigned_to**: Reference to a user in the sys_user table
+
+## OpenRouter LLM Integration
+
+The Bulk Data Generator uses OpenRouter to generate meaningful content for text fields like short_description and description. This produces realistic data that is consistent and contextually appropriate.
+
+### Available Models
+
+OpenRouter provides access to many different models. Some popular options include:
+
+- `openai/gpt-3.5-turbo` - Fast and cost-effective
+- `openai/gpt-4-turbo` - More capable but more expensive
+- `anthropic/claude-3-haiku-20240307` - Fast and high quality
+- `anthropic/claude-3-opus-20240229` - Highest quality but more expensive
+- `google/gemini-pro` - Google's model
+
+For a full list of available models, see the [OpenRouter documentation](https://openrouter.ai/docs#models).
+
+### How It Works
+
+The generator uses context-aware prompts based on incident details to generate appropriate content:
+
+1. For **short_description**, it uses the category, subcategory, and configuration item to generate a concise description of the issue.
+2. For **description**, it uses the generated short description and configuration item to create a more detailed explanation of the problem, including possible symptoms and impact.
+
+This approach ensures that the descriptions are realistic, consistent with each other, and appropriate for the type of incident being generated.
+
+### Performance Optimizations
+
+The Bulk Data Generator includes several optimizations to improve performance:
+
+1. **Concurrent API Calls**: The generator processes multiple records in parallel (default: 10 concurrent requests) to significantly speed up data generation.
+
+2. **Combined LLM Prompts**: Instead of making separate API calls for short_description and description, the generator combines them into a single prompt, reducing the number of API calls by half.
+
+3. **Batch Processing**: Records are generated and written in batches to minimize memory usage, making it possible to generate very large datasets.
+
+4. **Error Handling and Fallbacks**: Robust error handling ensures that the generation process continues even if some API calls fail, with fallback mechanisms to generate basic content when needed.
+
+#### Performance Tuning
+
+- **Concurrency Limit**: The default concurrency limit is 10 concurrent API calls. You can modify this in the code if your API provider allows higher concurrency.
+
+- **Batch Size**: For very large datasets (100K+ records), consider adjusting the batch size:
+  ```bash
+  node BulkDataGenerator.js --output=bulk-data.csv --count=100000 --batch=2000
+  ```
+
+- **Model Selection**: To optimize for speed and cost, use faster models like `openai/gpt-3.5-turbo` or `anthropic/claude-3-haiku-20240307`.
+
+- **Network Connection**: The generation process is network-bound due to API calls to OpenRouter, so a good internet connection is recommended.
+
+## Examples
+
+### Example 1: Generate 10,000 Incident Records with OpenRouter
+
+```bash
+# Generate 10,000 incident records using GPT-3.5 Turbo
+node BulkDataGenerator.js --output=incidents.csv --count=10000 --model=openai/gpt-3.5-turbo --apiKey=your-api-key
+```
+
+### Example 2: Using the Sample Data Scripts
+
+```bash
+# Unix/Linux/Mac - Generate 5,000 incident records using Claude
+./generate-sample-data.sh anthropic/claude-3-haiku-20240307 your-api-key incident 5000
+
+# Windows - Generate 2,000 incident records using GPT-4
+generate-sample-data.bat openai/gpt-4-turbo your-api-key incident 2000
+```
 
 ## Troubleshooting
 
-If you encounter issues:
+### Common Issues
 
-1. Check the ServiceNow system logs for any error messages.
-2. Verify that your OpenAI API key is correctly configured and has sufficient credits.
-3. Ensure the Generate Content skill is properly set up with OpenAI as the default provider.
-4. Double-check that all required fields are being populated when creating cases.
+1. **Missing Dependencies**: Ensure you have installed all required npm packages.
+   ```bash
+   npm install
+   ```
+
+2. **OpenRouter API Key**: Make sure you've provided a valid OpenRouter API key either as a command-line parameter or as an environment variable.
+
+3. **Memory Issues**: If you encounter memory issues when generating large datasets, try reducing the batch size:
+   ```bash
+   node BulkDataGenerator.js --output=bulk-data.csv --count=10000 --batch=500
+   ```
+
+4. **OpenRouter Connection Issues**: If you encounter errors connecting to OpenRouter:
+   - Ensure your API key is valid and correctly set
+   - Check your internet connection
+   - Verify the model name is correct
+   - Check OpenRouter status at https://status.openrouter.ai/
+   
+   If OpenRouter fails, the generator will fall back to using a simple text generation method.
+
+5. **Rate Limits**: If you're generating a very large number of records, you might hit OpenRouter's rate limits. In this case, try:
+   - Reducing the batch size
+   - Using a different model
+   - Spreading the generation over multiple runs
+
+## Important Notes
+
+- Attachment functionality has been removed from all classes. If you need to add attachments to records, you will need to implement this functionality separately.
 
 ## Contributing
 

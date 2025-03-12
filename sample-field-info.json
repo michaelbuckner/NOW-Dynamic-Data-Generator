@@ -1,0 +1,159 @@
+{
+  "tableName": "incident",
+  "fields": [
+    {
+      "name": "number",
+      "type": "string",
+      "maxLength": "40",
+      "isReference": false
+    },
+    {
+      "name": "short_description",
+      "type": "string",
+      "maxLength": "160",
+      "isReference": false
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "maxLength": "4000",
+      "isReference": false
+    },
+    {
+      "name": "priority",
+      "type": "integer",
+      "isReference": false
+    },
+    {
+      "name": "urgency",
+      "type": "integer",
+      "isReference": false
+    },
+    {
+      "name": "impact",
+      "type": "integer",
+      "isReference": false
+    },
+    {
+      "name": "state",
+      "type": "integer",
+      "isReference": false
+    },
+    {
+      "name": "category",
+      "type": "string",
+      "maxLength": "80",
+      "isReference": false
+    },
+    {
+      "name": "subcategory",
+      "type": "string",
+      "maxLength": "80",
+      "isReference": false
+    },
+    {
+      "name": "cmdb_ci",
+      "type": "reference",
+      "isReference": true
+    },
+    {
+      "name": "assigned_to",
+      "type": "reference",
+      "isReference": true
+    },
+    {
+      "name": "assignment_group",
+      "type": "reference",
+      "isReference": true
+    },
+    {
+      "name": "caller_id",
+      "type": "reference",
+      "isReference": true
+    },
+    {
+      "name": "opened_at",
+      "type": "datetime",
+      "isReference": false
+    },
+    {
+      "name": "closed_at",
+      "type": "datetime",
+      "isReference": false
+    },
+    {
+      "name": "close_code",
+      "type": "string",
+      "maxLength": "40",
+      "isReference": false
+    },
+    {
+      "name": "close_notes",
+      "type": "string",
+      "maxLength": "4000",
+      "isReference": false
+    },
+    {
+      "name": "comments",
+      "type": "string",
+      "maxLength": "4000",
+      "isReference": false
+    },
+    {
+      "name": "work_notes",
+      "type": "string",
+      "maxLength": "4000",
+      "isReference": false
+    }
+  ],
+  "referenceFields": {
+    "cmdb_ci": [
+      { "sys_id": "26da329f0a0a0bb400f69d8159bc9c5b", "display_value": "SAP Server" },
+      { "sys_id": "00a96c0d3790200044e0bfc8bcbe5dc3", "display_value": "Email Server" },
+      { "sys_id": "001a7f6b3b0313002b83d6a543990e98", "display_value": "Web Server" },
+      { "sys_id": "27d32778c0a8000b00db970eeaa60b16", "display_value": "Database Server" },
+      { "sys_id": "001a7f6b3b0313002b83d6a543990e99", "display_value": "Application Server" },
+      { "sys_id": "001a7f6b3b0313002b83d6a543990e9a", "display_value": "Network Switch" },
+      { "sys_id": "001a7f6b3b0313002b83d6a543990e9b", "display_value": "Firewall" },
+      { "sys_id": "001a7f6b3b0313002b83d6a543990e9c", "display_value": "Load Balancer" },
+      { "sys_id": "001a7f6b3b0313002b83d6a543990e9d", "display_value": "Storage Array" },
+      { "sys_id": "001a7f6b3b0313002b83d6a543990e9e", "display_value": "VPN Gateway" }
+    ],
+    "assigned_to": [
+      { "sys_id": "6816f79cc0a8016401c5a33be04be441", "display_value": "Abel Tuter" },
+      { "sys_id": "681b365ec0a80164000fb0b05854a0cd", "display_value": "Beth Anglin" },
+      { "sys_id": "681ccaf9c0a80164018f77b8b091c3c6", "display_value": "Carmen Ortiz" },
+      { "sys_id": "681ccb21c0a80164018ff207c31f0af1", "display_value": "David Miller" },
+      { "sys_id": "681ccb53c0a80164018ff20746dd9f5e", "display_value": "Eric Schroeder" },
+      { "sys_id": "681ccb9bc0a80164018ff20700871c5b", "display_value": "Fred Luddy" },
+      { "sys_id": "681ccbe5c0a80164018ff207f9f2672e", "display_value": "Gregg Alderson" },
+      { "sys_id": "681ccca5c0a80164018ff207c2a80121", "display_value": "Holly Higgins" },
+      { "sys_id": "681ccce5c0a80164018ff207f0f2673e", "display_value": "Itzel Hernandez" },
+      { "sys_id": "681cd31cc0a80164018ff207dffb6567", "display_value": "Joe Employee" }
+    ],
+    "assignment_group": [
+      { "sys_id": "8a4dde73c6112278017a6a4baf547aa7", "display_value": "Service Desk" },
+      { "sys_id": "8a5055c9c61122780043563ef53438e3", "display_value": "Hardware" },
+      { "sys_id": "8a5836310a0a0b3c00a290c008c1956a", "display_value": "Network" },
+      { "sys_id": "8a58370ac61122780066c1583d30dd8c", "display_value": "Software" },
+      { "sys_id": "8a588e13c611227801202b3ee144f7a6", "display_value": "Database" },
+      { "sys_id": "8a589c03c61122780195801f9c17f6f4", "display_value": "Security" },
+      { "sys_id": "8a78b7c1c61122780121df4c57a60f3d", "display_value": "Change Management" },
+      { "sys_id": "8a78bf03c61122780043563ef53438e7", "display_value": "Facilities" },
+      { "sys_id": "8a78c040c61122780195801f9c17f6fa", "display_value": "Application Development" },
+      { "sys_id": "8a78c710c61122780121df4c57a60f42", "display_value": "Server Administration" }
+    ],
+    "caller_id": [
+      { "sys_id": "681b365ec0a80164000fb0b05854a0cd", "display_value": "Beth Anglin" },
+      { "sys_id": "681ccaf9c0a80164018f77b8b091c3c6", "display_value": "Carmen Ortiz" },
+      { "sys_id": "681ccb21c0a80164018ff207c31f0af1", "display_value": "David Miller" },
+      { "sys_id": "681ccb53c0a80164018ff20746dd9f5e", "display_value": "Eric Schroeder" },
+      { "sys_id": "681ccb9bc0a80164018ff20700871c5b", "display_value": "Fred Luddy" },
+      { "sys_id": "681ccbe5c0a80164018ff207f9f2672e", "display_value": "Gregg Alderson" },
+      { "sys_id": "681ccca5c0a80164018ff207c2a80121", "display_value": "Holly Higgins" },
+      { "sys_id": "681ccce5c0a80164018ff207f0f2673e", "display_value": "Itzel Hernandez" },
+      { "sys_id": "681cd31cc0a80164018ff207dffb6567", "display_value": "Joe Employee" },
+      { "sys_id": "6816f79cc0a8016401c5a33be04be441", "display_value": "Abel Tuter" }
+    ]
+  }
+}

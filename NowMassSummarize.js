@@ -6,6 +6,8 @@ NowMassSummarize.prototype = Object.extendsObject(NowAbstractDataGenerator, {
         this.MAX_BATCH_SIZE = 3; // Maximum number of prompts to process in one batch
     },
 
+    // This is a test
+
     /**
      * Generates an HTML-formatted summary report for the past N days.
      * @param {Number} [numDays=30] - The number of past days to include in the summary.

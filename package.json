@@ -1,0 +1,27 @@
+{
+  "name": "now-dynamic-data-generator",
+  "version": "1.0.0",
+  "description": "A utility for generating bulk data for ServiceNow tables",
+  "main": "BulkDataGenerator.js",
+  "scripts": {
+    "test": "node test-openrouter.js",
+    "generate": "node BulkDataGenerator.js",
+    "sample": "node BulkDataGenerator.js --input=sample-field-info.json --output=sample-data.csv --count=1000"
+  },
+  "keywords": [
+    "servicenow",
+    "data-generator",
+    "bulk-data",
+    "csv",
+    "llm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@faker-js/faker": "^8.0.2",
+    "csv-writer": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
