@@ -33,49 +33,49 @@ const apiKey = args.apiKey || process.env.OPENROUTER_API_KEY; // API key from ar
 
 // Hard-coded reference data for ServiceNow tables
 const referenceData = {
-  // Users for caller_id and assigned_to
+  // sys_user
   sys_user: [
-    { sys_id: '6816f79cc0a8016401c5a33be04be441', display_value: 'Abel Tuter' },
-    { sys_id: '681b365ec0a80164000fb0b05854a0cd', display_value: 'Beth Anglin' },
-    { sys_id: '681ccaf9c0a80164018f77b8b091c3c6', display_value: 'Carmen Ortiz' },
-    { sys_id: '681ccb21c0a80164018ff207c31f0af1', display_value: 'David Miller' },
-    { sys_id: '681ccb53c0a80164018ff20746dd9f5e', display_value: 'Eric Schroeder' },
-    { sys_id: '681ccb9bc0a80164018ff20700871c5b', display_value: 'Fred Luddy' },
-    { sys_id: '681ccbe5c0a80164018ff207f9f2672e', display_value: 'Gregg Alderson' },
-    { sys_id: '681ccca5c0a80164018ff207c2a80121', display_value: 'Holly Higgins' },
-    { sys_id: '681ccce5c0a80164018ff207f0f2673e', display_value: 'Itzel Hernandez' },
-    { sys_id: '681cd31cc0a80164018ff207dffb6567', display_value: 'Joe Employee' }
+    { sys_id: 'f5826bf03710200044e0bfc8bcbe5d23', display_value: 'Owen Sparacino' },
+    { sys_id: '82826bf03710200044e0bfc8bcbe5d92', display_value: 'Claire Moyerman' },
+    { sys_id: 'f2826bf03710200044e0bfc8bcbe5df2', display_value: 'Benjamin Schkade' },
+    { sys_id: '7a826bf03710200044e0bfc8bcbe5dfe', display_value: 'Reina Wolchesky' },
+    { sys_id: '46c32549a9fe198101a84f3c2036e26b', display_value: 'Ted Keppel' },
+    { sys_id: '3282abf03710200044e0bfc8bcbe5d30', display_value: 'Lana Keels' },
+    { sys_id: '31826bf03710200044e0bfc8bcbe5d24', display_value: 'Misty Ericksen' },
+    { sys_id: 'b282abf03710200044e0bfc8bcbe5d1f', display_value: 'Rosemarie Fifield' },
+    { sys_id: '800b174138d089c868d09de320f9833b', display_value: 'Andrew Och' },
+    { sys_id: '0802b90dc3313000bac1addbdfba8fdb', display_value: 'Suresh Yekollu' }
   ],
   
-  // Assignment groups
+  // sys_user_group
   sys_user_group: [
-    { sys_id: '8a4dde73c6112278017a6a4baf547aa7', display_value: 'Service Desk' },
+    { sys_id: 'c1edeb7ab7232300e64c9489de11a9e3', display_value: 'Recommendation Admin' },
     { sys_id: '8a5055c9c61122780043563ef53438e3', display_value: 'Hardware' },
-    { sys_id: '8a5836310a0a0b3c00a290c008c1956a', display_value: 'Network' },
-    { sys_id: '8a58370ac61122780066c1583d30dd8c', display_value: 'Software' },
-    { sys_id: '8a588e13c611227801202b3ee144f7a6', display_value: 'Database' },
-    { sys_id: '8a589c03c61122780195801f9c17f6f4', display_value: 'Security' },
-    { sys_id: '8a78b7c1c61122780121df4c57a60f3d', display_value: 'Change Management' },
-    { sys_id: '8a78bf03c61122780043563ef53438e7', display_value: 'Facilities' },
-    { sys_id: '8a78c040c61122780195801f9c17f6fa', display_value: 'Application Development' },
-    { sys_id: '8a78c710c61122780121df4c57a60f42', display_value: 'Server Administration' }
+    { sys_id: '58851c2353322010a480ddeeff7b12b0', display_value: 'Report Access Request Approvers' },
+    { sys_id: '1c590685c0a8018b2a473a7159ff5d9a', display_value: 'RMA Approvers' },
+    { sys_id: 'cfcbad03d711110050f5edcb9e61038f', display_value: 'Team Development Code Reviewers' },
+    { sys_id: '477a05d153013010b846ddeeff7b1225', display_value: 'App Engine Admins' },
+    { sys_id: '679434f053231300e321ddeeff7b12d8', display_value: 'Help Desk' },
+    { sys_id: '12a586cd0bb23200ecfd818393673a30', display_value: 'Incident Management' },
+    { sys_id: '74ad1ff3c611227d01d25feac2af603f', display_value: 'Field Services' },
+    { sys_id: '205f1e0753333300c722ddeeff7b1235', display_value: 'Mobile Analytics Settings Managers' }
   ],
   
-  // Business services
+  // cmdb_ci_service
   cmdb_ci_service: [
-    { sys_id: '27d32778c0a8000b00db970eeaa60b16', display_value: 'Email' },
-    { sys_id: '27d32778c0a8000b00db970eeaa60b17', display_value: 'VPN' },
-    { sys_id: '27d32778c0a8000b00db970eeaa60b18', display_value: 'CRM' },
-    { sys_id: '27d32778c0a8000b00db970eeaa60b19', display_value: 'ERP' },
-    { sys_id: '27d32778c0a8000b00db970eeaa60b20', display_value: 'HR System' },
-    { sys_id: '27d32778c0a8000b00db970eeaa60b21', display_value: 'Intranet' },
-    { sys_id: '27d32778c0a8000b00db970eeaa60b22', display_value: 'File Sharing' },
-    { sys_id: '27d32778c0a8000b00db970eeaa60b23', display_value: 'Printing' },
-    { sys_id: '27d32778c0a8000b00db970eeaa60b24', display_value: 'Telephony' },
-    { sys_id: '27d32778c0a8000b00db970eeaa60b25', display_value: 'Video Conferencing' }
+    { sys_id: '28c2c50cc0a8000b001c50f77c1cdf47', display_value: 'E-Commerce' },
+    { sys_id: 'd278f28f933a31003b4bb095e57ffb8a', display_value: 'Jobvite Enterprise Recruitment Services' },
+    { sys_id: '0e7a06157f10310016181ccebefa91ce', display_value: 'All' },
+    { sys_id: 'd4e69e230a0a3c152e3a0cd4c1ef2107', display_value: 'This Service-now instance' },
+    { sys_id: '6a78f28f933a31003b4bb095e57ffb8a', display_value: 'Workday Enterprise Services' },
+    { sys_id: '26e494480a0a0bb400ad175538708ad9', display_value: 'SAP Sales and Distribution' },
+    { sys_id: '2fd114e10a0a0bb400f07732a4131e72', display_value: 'PeopleSoft Reporting' },
+    { sys_id: '26e540d80a0a0bb400660482030d04d8', display_value: 'SAP Payroll' },
+    { sys_id: '26da329f0a0a0bb400f69d8159bc753d', display_value: 'SAP Enterprise Services' },
+    { sys_id: '28c1db1dc0a8000b001224d1cdaf1425', display_value: 'Retail POS (Point of Sale)' }
   ],
   
-  // Service offerings
+  // service_offering
   service_offering: [
     { sys_id: '46fb0230a9fe198101a23f6712475e11', display_value: 'Standard Email' },
     { sys_id: '46fb0230a9fe198101a23f6712475e12', display_value: 'Premium Email' },
@@ -89,18 +89,58 @@ const referenceData = {
     { sys_id: '46fb0230a9fe198101a23f6712475e20', display_value: 'HR Full Service' }
   ],
   
-  // Configuration items
+  // cmdb_ci
   cmdb_ci: [
-    { sys_id: '26da329f0a0a0bb400f69d8159bc9c5b', display_value: 'SAP Server' },
-    { sys_id: '00a96c0d3790200044e0bfc8bcbe5dc3', display_value: 'Email Server' },
-    { sys_id: '001a7f6b3b0313002b83d6a543990e98', display_value: 'Web Server' },
-    { sys_id: '27d32778c0a8000b00db970eeaa60b16', display_value: 'Database Server' },
-    { sys_id: '001a7f6b3b0313002b83d6a543990e99', display_value: 'Application Server' },
-    { sys_id: '001a7f6b3b0313002b83d6a543990e9a', display_value: 'Network Switch' },
-    { sys_id: '001a7f6b3b0313002b83d6a543990e9b', display_value: 'Firewall' },
-    { sys_id: '001a7f6b3b0313002b83d6a543990e9c', display_value: 'Load Balancer' },
-    { sys_id: '001a7f6b3b0313002b83d6a543990e9d', display_value: 'Storage Array' },
-    { sys_id: '001a7f6b3b0313002b83d6a543990e9e', display_value: 'VPN Gateway' }
+    { sys_id: 'daa9a80d3790200044e0bfc8bcbe5dbe', display_value: 'MacBook Pro 17"' },
+    { sys_id: '46a70267a9fe19810109a8dffd60058c', display_value: 'HP Photo & Imaging' },
+    { sys_id: '46ce8025a9fe19810183e7122bbd3663', display_value: 'MSXML' },
+    { sys_id: '46be1d13a9fe19810092d1d9d7a11c75', display_value: 'Windows 2000 Hotfix - KB896727' },
+    { sys_id: '46d152dca9fe198101ab2e5f93fc8bd6', display_value: 'LiveReg (Symantec Corporation)' },
+    { sys_id: 'c6a9e40d3790200044e0bfc8bcbe5df6', display_value: 'MacBook Air 13"' },
+    { sys_id: '22a9604d3790200044e0bfc8bcbe5dae', display_value: 'Precision T5500 Workstation' },
+    { sys_id: '46c9e271a9fe198101940c1433d93192', display_value: 'Exchange 2000 Hotfix (SP4) [See 811853 for more information]' },
+    { sys_id: '46b67608a9fe1981018b3b74ac16dfad', display_value: 'ATI - Software Uninstall Utility' },
+    { sys_id: '46c326dfa9fe198101581448c3cca849', display_value: 'HP Image Zone' },
+    { sys_id: '106c5c13c61122750194a1e96cfde951', display_value: 'Service-now Production Sacramento' },
+    { sys_id: '1072335fc611227500c0267a21be5dc5', display_value: 'Service-now Production San Diego' },
+    { sys_id: '14a9e27bc61122750037b90c4d34da38', display_value: 'DatabaseServer2' },
+    { sys_id: '27e52cc8c0a8000b0067d0b66b8a66de', display_value: 'VMWARE-SD-04' },
+    { sys_id: '27e59e75c0a8000b003b3fab4211d2c2', display_value: 'VMWARE-SD-07' },
+    { sys_id: '27eabc4bc0a8000b0089fd512b3e8934', display_value: 'INSIGHT-NY-03' },
+    { sys_id: '3a63d606c611222500487ae00a5bf3b8', display_value: 'AS400' },
+    { sys_id: '6cabe993c611222500bb025775ec8732', display_value: 'Car-1' },
+    { sys_id: '6cb10db5c611222500bf34f43d2ff189', display_value: 'Car-2' },
+    { sys_id: '6ccab11cc611222500e1549797d1c1e5', display_value: 'Car-3' },
+    { sys_id: '827b692d0ad337021abb72d3737ff401', display_value: 'Webserver FLX' },
+    { sys_id: '8d6916edc611222501dbb12bd683e36f', display_value: 'Car-4' },
+    { sys_id: 'a9c68505c6112276017ee7d52f43e7c6', display_value: 'SD1' },
+    { sys_id: 'b0c25d1bc0a800090168be1bfcdcd759', display_value: 'FileServerFloor2' },
+    { sys_id: 'b0c3437ac0a8000900433b8a412966aa', display_value: 'FileServerFloor1' },
+    { sys_id: 'b0c4030ac0a800090152e7a4564ca36c', display_value: 'MailServerUS' },
+    { sys_id: 'b0cb50c3c0a8000900893e69d3c5885e', display_value: 'ApplicationServerPeopleSoft' },
+    { sys_id: 'b0cbf176c0a80009002b452bc33e2fc3', display_value: 'DatabaseServer1' },
+    { sys_id: 'b0ccabf1c0a80009001f14fd151d8df0', display_value: 'ApplicationServerHelpdesk' },
+    { sys_id: '27e3a47cc0a8000b001d28ab291fa65b', display_value: 'OWA-SD-01' },
+    { sys_id: '3a172e820a0a0bb40034228e9f65f1be', display_value: 'PS LoadBal01' },
+    { sys_id: '3a6b9e16c0a8ce0100e154dd7e6353c2', display_value: 'SAP LoadBal01' },
+    { sys_id: '3a6bc0d9c0a8ce01004a1b154049d4d2', display_value: 'SAP LoadBal02' },
+    { sys_id: '4014825d0a0a0b9b00c4db61928034b9', display_value: 'SAP-SD-01' },
+    { sys_id: '4014a3010a0a0b9b007e8c84ff4d4abe', display_value: 'SAP-SD-02' },
+    { sys_id: '4014bc1c0a0a0b9b008781123ff5a5e3', display_value: 'SAP-SD-03' },
+    { sys_id: '4014e8100a0a0b9b001e4215e2ee505e', display_value: 'SAP-NY-02' },
+    { sys_id: '5397819bc0a8016400e2f02aa9444989', display_value: 'unix200' },
+    { sys_id: '53979c53c0a801640116ad2044643fb2', display_value: 'unix201' },
+    { sys_id: '5f7dfd9cc0a8010e00ab58006f14bdc5', display_value: 'dbaix900nyc' },
+    { sys_id: '5f9b83bfc0a8010e005a2b3212c9dc07', display_value: 'dbaix901nyc' },
+    { sys_id: '5f9ba346c0a8010e00158183aaa1eb24', display_value: 'dbaix902nyc' },
+    { sys_id: '60ca3062c0a8010e0145c47fe9f3dc12', display_value: 'lawson_db_100' },
+    { sys_id: '60cbab5ec0a8010e00b68ab75d1caa93', display_value: 'lawson_app_100' },
+    { sys_id: '3a70f789c0a8ce010091b0ea635b982a', display_value: 'SAP AppSRV01' },
+    { sys_id: '3a726a31c0a8ce0100902bd28760693f', display_value: 'SAP AppSRV02' },
+    { sys_id: '3a290cc60a0a0bb400000bdb386af1cf', display_value: 'PS LinuxApp01' },
+    { sys_id: '3a5dd3dbc0a8ce0100655f1ec66ed42c', display_value: 'PS LinuxApp02' },
+    { sys_id: '53958ff0c0a801640171ec76aa0c8f86', display_value: 'lnux100' },
+    { sys_id: '539747cac0a801640163e60735fbbf6e', display_value: 'lnux101' }
   ]
 };
 
@@ -213,22 +253,22 @@ class BulkDataGenerator {
   createCsvHeader() {
     if (this.tableName === 'incident') {
       return [
-        { id: 'number', title: 'number' },
-        { id: 'caller_id', title: 'caller_id' },
-        { id: 'category', title: 'category' },
-        { id: 'subcategory', title: 'subcategory' },
-        { id: 'business_service', title: 'business_service' },
-        { id: 'service_offering', title: 'service_offering' },
-        { id: 'cmdb_ci', title: 'cmdb_ci' },
-        { id: 'short_description', title: 'short_description' },
-        { id: 'description', title: 'description' },
-        { id: 'contact_type', title: 'contact_type' },
-        { id: 'state', title: 'state' },
-        { id: 'impact', title: 'impact' },
-        { id: 'urgency', title: 'urgency' },
-        { id: 'priority', title: 'priority' },
-        { id: 'assignment_group', title: 'assignment_group' },
-        { id: 'assigned_to', title: 'assigned_to' }
+        { id: 'number', title: 'Number' },
+        { id: 'caller_id', title: 'Caller' },
+        { id: 'category', title: 'Category' },
+        { id: 'subcategory', title: 'Subcategory' },
+        { id: 'business_service', title: 'Service' },
+        { id: 'service_offering', title: 'Service offering' },
+        { id: 'cmdb_ci', title: 'Configuration item' },
+        { id: 'short_description', title: 'Short description' },
+        { id: 'description', title: 'Description' },
+        { id: 'contact_type', title: 'Channel' },
+        { id: 'state', title: 'State' },
+        { id: 'impact', title: 'Impact' },
+        { id: 'urgency', title: 'Urgency' },
+        { id: 'priority', title: 'Priority' },
+        { id: 'assignment_group', title: 'Assignment group' },
+        { id: 'assigned_to', title: 'Assigned to' }
       ];
     } else if (this.tableName === 'case') {
       // TODO: Implement case table headers
@@ -353,10 +393,21 @@ class BulkDataGenerator {
   /**
    * Get a random reference value from the reference data
    * @param {string} tableName - Name of the reference table
-   * @returns {Object} - Random reference record
+   * @returns {Object} - Random reference record or a default record if the table is empty
    */
   getRandomReference(tableName) {
     const records = referenceData[tableName];
+    
+    // Check if the reference table exists and has records
+    if (!records || records.length === 0) {
+      console.warn(`Warning: Reference table '${tableName}' is empty or undefined. Using a default value.`);
+      // Return a default record with a placeholder sys_id and display_value
+      return {
+        sys_id: '00000000000000000000000000000000',
+        display_value: `Default ${tableName} value`
+      };
+    }
+    
     return records[Math.floor(Math.random() * records.length)];
   }
 
