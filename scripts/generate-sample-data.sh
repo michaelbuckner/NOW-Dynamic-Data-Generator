@@ -21,7 +21,7 @@ fi
 
 # Generate sample records
 echo "Generating $COUNT $TABLE records using OpenRouter model: $MODEL..."
-node BulkDataGenerator.js --output=sample-data.csv --count=$COUNT --table=$TABLE --model=$MODEL --apiKey=$API_KEY
+node src/node/BulkDataGenerator.js --output=sample-data.csv --count=$COUNT --table=$TABLE --model=$MODEL --apiKey=$API_KEY
 
 echo "Done! Sample data has been written to sample-data.csv"
 echo "You can now import this file into ServiceNow using System Import Sets > Load Data"

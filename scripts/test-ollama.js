@@ -12,7 +12,7 @@
  * node test-ollama.js mistral
  */
 
-const OllamaLLM = require('./OllamaLLMIntegration');
+const OllamaLLM = require('../src/llm/OllamaLLMIntegration');
 
 // Get model from command line argument or use default
 const model = process.argv[2] || 'llama3.3';

@@ -14,7 +14,7 @@
  * If apiKey is not provided, it will use the OPENROUTER_API_KEY environment variable.
  */
 
-const OpenRouterLLM = require('./OpenRouterLLMIntegration');
+const OpenRouterLLM = require('../src/llm/OpenRouterLLMIntegration');
 
 // Get model and API key from command line arguments or use defaults
 const model = process.argv[2] || 'openai/gpt-3.5-turbo';

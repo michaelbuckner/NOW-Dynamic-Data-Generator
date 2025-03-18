@@ -19,7 +19,7 @@ class OpenRouterLLM {
       console.warn('Warning: No OpenRouter API key provided. Set OPENROUTER_API_KEY environment variable or pass apiKey in options.');
     }
     
-    this.model = options.model || 'openai/gpt-3.5-turbo';
+    this.model = options.model || 'google/gemini-2.0-flash-001';
     this.temperature = options.temperature || 0.7;
     this.maxTokens = options.maxTokens || 100;
     

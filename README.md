@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# NOW-Dynamic-Data-Generator
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# NOW-Dynamic-Data-Generator
 
 ![image](https://github.com/user-attachments/assets/bc78048f-1040-49bd-b929-17feacf247bb) ![image](https://github.com/user-attachments/assets/a9888184-05cc-407b-bc07-64433eace7b0)
 
@@ -245,6 +245,19 @@ A utility for generating bulk data (10K+ records) for ServiceNow tables. This co
 1. **ServiceNow Field Information Gatherer**: A ServiceNow script that extracts field information for a specified table, including field types and reference values.
 2. **Bulk Data Generator**: A Node.js program that generates large quantities of data based on the gathered field information and outputs it to a CSV file for import into ServiceNow.
 
+## Project Structure
+
+The project is organized into the following directories:
+
+- `src/` - Source code
+  - `servicenow/` - ServiceNow script includes
+  - `node/` - Node.js components
+  - `llm/` - LLM integration components
+- `scripts/` - Utility scripts
+- `examples/` - Example output files
+- `docs/` - Documentation
+- `config/` - Configuration files
+
 ## Features
 
 - Generate 10K+ records with realistic data for ServiceNow tables
@@ -284,7 +297,7 @@ A utility for generating bulk data (10K+ records) for ServiceNow tables. This co
 Before generating a large dataset, you can test the OpenRouter integration:
 
 ```bash
-node test-openrouter.js [model] [apiKey]
+node scripts/test-openrouter.js [model] [apiKey]
 ```
 
 This will generate sample incident descriptions for different categories and configuration items, allowing you to verify that the OpenRouter integration is working correctly.
@@ -294,7 +307,7 @@ This will generate sample incident descriptions for different categories and con
 Run the Bulk Data Generator to create incident records:
 
 ```bash
-node BulkDataGenerator.js --output=bulk-data.csv --count=10000 --apiKey=your-api-key
+node src/node/BulkDataGenerator.js --output=bulk-data.csv --count=10000 --apiKey=your-api-key
 ```
 
 Options:
@@ -386,7 +399,7 @@ The Bulk Data Generator includes several optimizations to improve performance:
 
 - **Batch Size**: For very large datasets (100K+ records), consider adjusting the batch size:
   ```bash
-  node BulkDataGenerator.js --output=bulk-data.csv --count=100000 --batch=2000
+  node src/node/BulkDataGenerator.js --output=bulk-data.csv --count=100000 --batch=2000
   ```
 
 - **Model Selection**: To optimize for speed and cost, use faster models like `openai/gpt-3.5-turbo` or `anthropic/claude-3-haiku-20240307`.
@@ -399,7 +412,7 @@ The Bulk Data Generator includes several optimizations to improve performance:
 
 ```bash
 # Generate 10,000 incident records using GPT-3.5 Turbo
-node BulkDataGenerator.js --output=incidents.csv --count=10000 --model=openai/gpt-3.5-turbo --apiKey=your-api-key
+node src/node/BulkDataGenerator.js --output=incidents.csv --count=10000 --model=openai/gpt-3.5-turbo --apiKey=your-api-key
 ```
 
 ### Example 2: Using the Sample Data Scripts
@@ -425,7 +438,7 @@ generate-sample-data.bat openai/gpt-4-turbo your-api-key incident 2000
 
 3. **Memory Issues**: If you encounter memory issues when generating large datasets, try reducing the batch size:
    ```bash
-   node BulkDataGenerator.js --output=bulk-data.csv --count=10000 --batch=500
+   node src/node/BulkDataGenerator.js --output=bulk-data.csv --count=10000 --batch=500
    ```
 
 4. **OpenRouter Connection Issues**: If you encounter errors connecting to OpenRouter:

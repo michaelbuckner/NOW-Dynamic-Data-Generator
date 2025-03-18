@@ -5,14 +5,14 @@
  * This version specifically focuses on generating incident records.
  * 
  * Usage:
- * node BulkDataGenerator.js --output=bulk-data.csv --count=10000 --apiKey=your-openrouter-api-key
+ * node BulkDataGenerator.js --output=bulk-data.xlsx --count=10000 --apiKey=your-openrouter-api-key
  */
 
 const fs = require('fs');
 const path = require('path');
-const { createObjectCsvWriter } = require('csv-writer');
+const Excel = require('exceljs');
 const { faker } = require('@faker-js/faker');
-const OpenRouterLLM = require('./OpenRouterLLMIntegration');
+const OpenRouterLLM = require('../llm/OpenRouterLLMIntegration');
 
 // Parse command line arguments
 const args = process.argv.slice(2).reduce((acc, arg) => {
@@ -22,7 +22,7 @@ const args = process.argv.slice(2).reduce((acc, arg) => {
 }, {});
 
 // Default values
-const outputFile = args.output || 'bulk-data.csv';
+const outputFile = args.output || 'bulk-data.xlsx';
 const recordCount = parseInt(args.count || '10000', 10);
 const batchSize = parseInt(args.batch || '1000', 10);
 const tableName = args.table || 'incident'; // Default to incident table
@@ -33,46 +33,86 @@ const apiKey = args.apiKey || process.env.OPENROUTER_API_KEY; // API key from ar
 
 // Hard-coded reference data for ServiceNow tables
 const referenceData = {
-  // sys_user
-  sys_user: [
-    { sys_id: 'f5826bf03710200044e0bfc8bcbe5d23', display_value: 'Owen Sparacino' },
-    { sys_id: '82826bf03710200044e0bfc8bcbe5d92', display_value: 'Claire Moyerman' },
-    { sys_id: 'f2826bf03710200044e0bfc8bcbe5df2', display_value: 'Benjamin Schkade' },
-    { sys_id: '7a826bf03710200044e0bfc8bcbe5dfe', display_value: 'Reina Wolchesky' },
-    { sys_id: '46c32549a9fe198101a84f3c2036e26b', display_value: 'Ted Keppel' },
-    { sys_id: '3282abf03710200044e0bfc8bcbe5d30', display_value: 'Lana Keels' },
-    { sys_id: '31826bf03710200044e0bfc8bcbe5d24', display_value: 'Misty Ericksen' },
-    { sys_id: 'b282abf03710200044e0bfc8bcbe5d1f', display_value: 'Rosemarie Fifield' },
-    { sys_id: '800b174138d089c868d09de320f9833b', display_value: 'Andrew Och' },
-    { sys_id: '0802b90dc3313000bac1addbdfba8fdb', display_value: 'Suresh Yekollu' }
-  ],
-  
   // sys_user_group
   sys_user_group: [
-    { sys_id: 'c1edeb7ab7232300e64c9489de11a9e3', display_value: 'Recommendation Admin' },
     { sys_id: '8a5055c9c61122780043563ef53438e3', display_value: 'Hardware' },
-    { sys_id: '58851c2353322010a480ddeeff7b12b0', display_value: 'Report Access Request Approvers' },
-    { sys_id: '1c590685c0a8018b2a473a7159ff5d9a', display_value: 'RMA Approvers' },
-    { sys_id: 'cfcbad03d711110050f5edcb9e61038f', display_value: 'Team Development Code Reviewers' },
-    { sys_id: '477a05d153013010b846ddeeff7b1225', display_value: 'App Engine Admins' },
-    { sys_id: '679434f053231300e321ddeeff7b12d8', display_value: 'Help Desk' },
-    { sys_id: '12a586cd0bb23200ecfd818393673a30', display_value: 'Incident Management' },
-    { sys_id: '74ad1ff3c611227d01d25feac2af603f', display_value: 'Field Services' },
-    { sys_id: '205f1e0753333300c722ddeeff7b1235', display_value: 'Mobile Analytics Settings Managers' }
+    { sys_id: '3ccb62b67fb30210674d91fadc8665c2', display_value: 'MFA Exempted User Group' },
+    { sys_id: '0c4e7b573b331300ad3cc9bb34efc461', display_value: 'Problem Analyzers' },
+    { sys_id: '5f74727dc0a8010e01efe33a251993f9', display_value: 'NY DB' },
+    { sys_id: 'a715cd759f2002002920bde8132e7018', display_value: 'Change Management' },
+    { sys_id: '36c741fa731313005754660c4cf6a70d', display_value: 'Openspace' },
+    { sys_id: '0a52d3dcd7011200f2d224837e6103f2', display_value: 'Application Development' },
+    { sys_id: 'aaccc971c0a8001500fe1ff4302de101', display_value: 'Capacity Mgmt' },
+    { sys_id: '287ebd7da9fe198100f92cc8d1d2154e', display_value: 'Network' },
+    { sys_id: 'aacb62e2c0a80015007f67f752c2b12c', display_value: 'Project Mgmt' }
+  ],
+  
+  // sys_user
+  sys_user: [
+    { 
+      sys_id: '5137153cc611227c000bbd1bd8cd2005', 
+      display_value: 'Fred Luddy', 
+      sys_user_group: 'Hardware|8a5055c9c61122780043563ef53438e3, Network|287ebd7da9fe198100f92cc8d1d2154e, Project Mgmt|aacb62e2c0a80015007f67f752c2b12c' 
+    },
+    { 
+      sys_id: 'f8588956937002002dcef157b67ffb98', 
+      display_value: 'Change Manager', 
+      sys_user_group: 'Change Management|a715cd759f2002002920bde8132e7018' 
+    },
+    { 
+      sys_id: '5137153cc611227c000bbd1bd8cd2007', 
+      display_value: 'David Loo', 
+      sys_user_group: 'Hardware|8a5055c9c61122780043563ef53438e3, NY DB|5f74727dc0a8010e01efe33a251993f9, Capacity Mgmt|aaccc971c0a8001500fe1ff4302de101, Network|287ebd7da9fe198100f92cc8d1d2154e' 
+    },
+    { 
+      sys_id: '1832fbe1d701120035ae23c7ce610369', 
+      display_value: 'Manifah Masood', 
+      sys_user_group: 'Application Development|0a52d3dcd7011200f2d224837e6103f2' 
+    },
+    { 
+      sys_id: '62526fa1d701120035ae23c7ce6103c6', 
+      display_value: 'Guillermo Frohlich', 
+      sys_user_group: 'Application Development|0a52d3dcd7011200f2d224837e6103f2' 
+    },
+    { 
+      sys_id: 'f298d2d2c611227b0106c6be7f154bc8', 
+      display_value: 'Bow Ruggeri', 
+      sys_user_group: 'Hardware|8a5055c9c61122780043563ef53438e3, Network|287ebd7da9fe198100f92cc8d1d2154e' 
+    },
+    { 
+      sys_id: '38cb3f173b331300ad3cc9bb34efc4d6', 
+      display_value: 'Problem Coordinator B', 
+      sys_user_group: 'Problem Analyzers|0c4e7b573b331300ad3cc9bb34efc461' 
+    },
+    { 
+      sys_id: '73ab3f173b331300ad3cc9bb34efc4df', 
+      display_value: 'Problem Coordinator A', 
+      sys_user_group: 'Problem Analyzers|0c4e7b573b331300ad3cc9bb34efc461' 
+    },
+    { 
+      sys_id: '7e3bbb173b331300ad3cc9bb34efc4a8', 
+      display_value: 'Problem Task Analyst A', 
+      sys_user_group: 'Problem Analyzers|0c4e7b573b331300ad3cc9bb34efc461' 
+    },
+    { 
+      sys_id: '681b365ec0a80164000fb0b05854a0cd', 
+      display_value: 'ITIL User', 
+      sys_user_group: 'Hardware|8a5055c9c61122780043563ef53438e3, Network|287ebd7da9fe198100f92cc8d1d2154e' 
+    }
   ],
   
   // cmdb_ci_service
   cmdb_ci_service: [
-    { sys_id: '28c2c50cc0a8000b001c50f77c1cdf47', display_value: 'E-Commerce' },
-    { sys_id: 'd278f28f933a31003b4bb095e57ffb8a', display_value: 'Jobvite Enterprise Recruitment Services' },
-    { sys_id: '0e7a06157f10310016181ccebefa91ce', display_value: 'All' },
-    { sys_id: 'd4e69e230a0a3c152e3a0cd4c1ef2107', display_value: 'This Service-now instance' },
-    { sys_id: '6a78f28f933a31003b4bb095e57ffb8a', display_value: 'Workday Enterprise Services' },
-    { sys_id: '26e494480a0a0bb400ad175538708ad9', display_value: 'SAP Sales and Distribution' },
-    { sys_id: '2fd114e10a0a0bb400f07732a4131e72', display_value: 'PeopleSoft Reporting' },
+    { sys_id: '451047c6c0a8016400de0ae6df9b9d76', display_value: 'Bond Trading' },
     { sys_id: '26e540d80a0a0bb400660482030d04d8', display_value: 'SAP Payroll' },
-    { sys_id: '26da329f0a0a0bb400f69d8159bc753d', display_value: 'SAP Enterprise Services' },
-    { sys_id: '28c1db1dc0a8000b001224d1cdaf1425', display_value: 'Retail POS (Point of Sale)' }
+    { sys_id: 'd278f28f933a31003b4bb095e57ffb8a', display_value: 'Jobvite Enterprise Recruitment Services' },
+    { sys_id: '2fd0eab90a0a0bb40061cf732d32967c', display_value: 'PeopleSoft Governance' },
+    { sys_id: '26e46e5b0a0a0bb4005d1146846c429c', display_value: 'SAP Controlling' },
+    { sys_id: '26e494480a0a0bb400ad175538708ad9', display_value: 'SAP Sales and Distribution' },
+    { sys_id: '6a78f28f933a31003b4bb095e57ffb8a', display_value: 'Workday Enterprise Services' },
+    { sys_id: '28c2c50cc0a8000b001c50f77c1cdf47', display_value: 'E-Commerce' },
+    { sys_id: '26e44e8a0a0a0bb40095ff953f9ee520', display_value: 'SAP Materials Management' },
+    { sys_id: '28c273fcc0a8000b00a86416d360cc7d', display_value: 'Retail Adding Points' }
   ],
   
   // service_offering
@@ -91,56 +131,106 @@ const referenceData = {
   
   // cmdb_ci
   cmdb_ci: [
-    { sys_id: 'daa9a80d3790200044e0bfc8bcbe5dbe', display_value: 'MacBook Pro 17"' },
-    { sys_id: '46a70267a9fe19810109a8dffd60058c', display_value: 'HP Photo & Imaging' },
-    { sys_id: '46ce8025a9fe19810183e7122bbd3663', display_value: 'MSXML' },
-    { sys_id: '46be1d13a9fe19810092d1d9d7a11c75', display_value: 'Windows 2000 Hotfix - KB896727' },
-    { sys_id: '46d152dca9fe198101ab2e5f93fc8bd6', display_value: 'LiveReg (Symantec Corporation)' },
-    { sys_id: 'c6a9e40d3790200044e0bfc8bcbe5df6', display_value: 'MacBook Air 13"' },
-    { sys_id: '22a9604d3790200044e0bfc8bcbe5dae', display_value: 'Precision T5500 Workstation' },
-    { sys_id: '46c9e271a9fe198101940c1433d93192', display_value: 'Exchange 2000 Hotfix (SP4) [See 811853 for more information]' },
-    { sys_id: '46b67608a9fe1981018b3b74ac16dfad', display_value: 'ATI - Software Uninstall Utility' },
-    { sys_id: '46c326dfa9fe198101581448c3cca849', display_value: 'HP Image Zone' },
-    { sys_id: '106c5c13c61122750194a1e96cfde951', display_value: 'Service-now Production Sacramento' },
-    { sys_id: '1072335fc611227500c0267a21be5dc5', display_value: 'Service-now Production San Diego' },
-    { sys_id: '14a9e27bc61122750037b90c4d34da38', display_value: 'DatabaseServer2' },
-    { sys_id: '27e52cc8c0a8000b0067d0b66b8a66de', display_value: 'VMWARE-SD-04' },
-    { sys_id: '27e59e75c0a8000b003b3fab4211d2c2', display_value: 'VMWARE-SD-07' },
-    { sys_id: '27eabc4bc0a8000b0089fd512b3e8934', display_value: 'INSIGHT-NY-03' },
-    { sys_id: '3a63d606c611222500487ae00a5bf3b8', display_value: 'AS400' },
-    { sys_id: '6cabe993c611222500bb025775ec8732', display_value: 'Car-1' },
-    { sys_id: '6cb10db5c611222500bf34f43d2ff189', display_value: 'Car-2' },
-    { sys_id: '6ccab11cc611222500e1549797d1c1e5', display_value: 'Car-3' },
-    { sys_id: '827b692d0ad337021abb72d3737ff401', display_value: 'Webserver FLX' },
-    { sys_id: '8d6916edc611222501dbb12bd683e36f', display_value: 'Car-4' },
-    { sys_id: 'a9c68505c6112276017ee7d52f43e7c6', display_value: 'SD1' },
-    { sys_id: 'b0c25d1bc0a800090168be1bfcdcd759', display_value: 'FileServerFloor2' },
-    { sys_id: 'b0c3437ac0a8000900433b8a412966aa', display_value: 'FileServerFloor1' },
-    { sys_id: 'b0c4030ac0a800090152e7a4564ca36c', display_value: 'MailServerUS' },
-    { sys_id: 'b0cb50c3c0a8000900893e69d3c5885e', display_value: 'ApplicationServerPeopleSoft' },
-    { sys_id: 'b0cbf176c0a80009002b452bc33e2fc3', display_value: 'DatabaseServer1' },
-    { sys_id: 'b0ccabf1c0a80009001f14fd151d8df0', display_value: 'ApplicationServerHelpdesk' },
-    { sys_id: '27e3a47cc0a8000b001d28ab291fa65b', display_value: 'OWA-SD-01' },
-    { sys_id: '3a172e820a0a0bb40034228e9f65f1be', display_value: 'PS LoadBal01' },
-    { sys_id: '3a6b9e16c0a8ce0100e154dd7e6353c2', display_value: 'SAP LoadBal01' },
-    { sys_id: '3a6bc0d9c0a8ce01004a1b154049d4d2', display_value: 'SAP LoadBal02' },
-    { sys_id: '4014825d0a0a0b9b00c4db61928034b9', display_value: 'SAP-SD-01' },
-    { sys_id: '4014a3010a0a0b9b007e8c84ff4d4abe', display_value: 'SAP-SD-02' },
-    { sys_id: '4014bc1c0a0a0b9b008781123ff5a5e3', display_value: 'SAP-SD-03' },
-    { sys_id: '4014e8100a0a0b9b001e4215e2ee505e', display_value: 'SAP-NY-02' },
-    { sys_id: '5397819bc0a8016400e2f02aa9444989', display_value: 'unix200' },
-    { sys_id: '53979c53c0a801640116ad2044643fb2', display_value: 'unix201' },
-    { sys_id: '5f7dfd9cc0a8010e00ab58006f14bdc5', display_value: 'dbaix900nyc' },
-    { sys_id: '5f9b83bfc0a8010e005a2b3212c9dc07', display_value: 'dbaix901nyc' },
-    { sys_id: '5f9ba346c0a8010e00158183aaa1eb24', display_value: 'dbaix902nyc' },
-    { sys_id: '60ca3062c0a8010e0145c47fe9f3dc12', display_value: 'lawson_db_100' },
-    { sys_id: '60cbab5ec0a8010e00b68ab75d1caa93', display_value: 'lawson_app_100' },
-    { sys_id: '3a70f789c0a8ce010091b0ea635b982a', display_value: 'SAP AppSRV01' },
-    { sys_id: '3a726a31c0a8ce0100902bd28760693f', display_value: 'SAP AppSRV02' },
-    { sys_id: '3a290cc60a0a0bb400000bdb386af1cf', display_value: 'PS LinuxApp01' },
-    { sys_id: '3a5dd3dbc0a8ce0100655f1ec66ed42c', display_value: 'PS LinuxApp02' },
-    { sys_id: '53958ff0c0a801640171ec76aa0c8f86', display_value: 'lnux100' },
-    { sys_id: '539747cac0a801640163e60735fbbf6e', display_value: 'lnux101' }
+    { 
+      sys_id: '3a6b9e16c0a8ce0100e154dd7e6353c2', 
+      display_value: 'SAP LoadBal01', 
+      cmdb_ci_service: 'SAP Materials Management|26e44e8a0a0a0bb40095ff953f9ee520' 
+    },
+    { 
+      sys_id: '3a27f1520a0a0bb400ecd6ff7afcf036', 
+      display_value: 'PS Apache02', 
+      cmdb_ci_service: 'PeopleSoft Governance|2fd0eab90a0a0bb40061cf732d32967c' 
+    },
+    { 
+      sys_id: '55c3578bc0a8010e0117f727897d0011', 
+      display_value: 'bond_trade_ny', 
+      cmdb_ci_service: 'Bond Trading|451047c6c0a8016400de0ae6df9b9d76' 
+    },
+    { 
+      sys_id: '53958ff0c0a801640171ec76aa0c8f86', 
+      display_value: 'lnux100', 
+      cmdb_ci_service: 'Bond Trading|451047c6c0a8016400de0ae6df9b9d76' 
+    },
+    { 
+      sys_id: '28c2131fc0a8000b0020787c5d6816f0', 
+      display_value: 'Retail Client Registration', 
+      cmdb_ci_service: 'E-Commerce|28c2c50cc0a8000b001c50f77c1cdf47' 
+    },
+    { 
+      sys_id: '3a6bc0d9c0a8ce01004a1b154049d4d2', 
+      display_value: 'SAP LoadBal02', 
+      cmdb_ci_service: 'SAP Materials Management|26e44e8a0a0a0bb40095ff953f9ee520' 
+    },
+    { 
+      sys_id: '63036c18c0a8010e01bac272daed2e2c', 
+      display_value: 'Bond Trading - DR', 
+      cmdb_ci_service: 'Bond Trading|451047c6c0a8016400de0ae6df9b9d76' 
+    },
+    { 
+      sys_id: '3a172e820a0a0bb40034228e9f65f1be', 
+      display_value: 'PS LoadBal01', 
+      cmdb_ci_service: 'PeopleSoft Governance|2fd0eab90a0a0bb40061cf732d32967c' 
+    },
+    { 
+      sys_id: '55c38564c0a8010e00596302eb0d26bc', 
+      display_value: 'bond_trade_uk', 
+      cmdb_ci_service: 'Bond Trading|451047c6c0a8016400de0ae6df9b9d76' 
+    },
+    { 
+      sys_id: '26da329f0a0a0bb400f69d8159bc753d', 
+      display_value: 'SAP Enterprise Services', 
+      cmdb_ci_service: 'SAP Payroll|26e540d80a0a0bb400660482030d04d8, SAP Controlling|26e46e5b0a0a0bb4005d1146846c429c, SAP Sales and Distribution|26e494480a0a0bb400ad175538708ad9, SAP Materials Management|26e44e8a0a0a0bb40095ff953f9ee520' 
+    },
+    { 
+      sys_id: '27eabc4bc0a8000b0089fd512b3e8934', 
+      display_value: 'INSIGHT-NY-03', 
+      cmdb_ci_service: 'Retail Adding Points|28c273fcc0a8000b00a86416d360cc7d' 
+    },
+    { 
+      sys_id: '5397fa53c0a8016400f562cb29027855', 
+      display_value: 'apache linux ny 100', 
+      cmdb_ci_service: 'Bond Trading|451047c6c0a8016400de0ae6df9b9d76' 
+    },
+    { 
+      sys_id: '2216daf0d7820200c1ed0fbc5e6103ca', 
+      display_value: 'bond_trade_aus', 
+      cmdb_ci_service: 'SAP Payroll|26e540d80a0a0bb400660482030d04d8' 
+    },
+    { 
+      sys_id: '3a2810c20a0a0bb400268337d6e942ca', 
+      display_value: 'PS Apache03', 
+      cmdb_ci_service: 'PeopleSoft Governance|2fd0eab90a0a0bb40061cf732d32967c' 
+    },
+    { 
+      sys_id: '281a4d5fc0a8000b00e4ba489a83eedc', 
+      display_value: 'IT Services', 
+      cmdb_ci_service: 'Bond Trading|451047c6c0a8016400de0ae6df9b9d76' 
+    },
+    { 
+      sys_id: '28c1db1dc0a8000b001224d1cdaf1425', 
+      display_value: 'Retail POS (Point of Sale)', 
+      cmdb_ci_service: 'Retail Adding Points|28c273fcc0a8000b00a86416d360cc7d' 
+    },
+    { 
+      sys_id: '2fc86c650a0a0bb4003698b5331640df', 
+      display_value: 'PeopleSoft Enterprise Services', 
+      cmdb_ci_service: 'PeopleSoft Governance|2fd0eab90a0a0bb40061cf732d32967c' 
+    },
+    { 
+      sys_id: '5f9b83bfc0a8010e005a2b3212c9dc07', 
+      display_value: 'dbaix901nyc', 
+      cmdb_ci_service: 'Retail Adding Points|28c273fcc0a8000b00a86416d360cc7d' 
+    },
+    { 
+      sys_id: '53979c53c0a801640116ad2044643fb2', 
+      display_value: 'unix201', 
+      cmdb_ci_service: 'Bond Trading|451047c6c0a8016400de0ae6df9b9d76' 
+    },
+    { 
+      sys_id: '3a27d4370a0a0bb4006316812bf45439', 
+      display_value: 'PS Apache01', 
+      cmdb_ci_service: 'PeopleSoft Governance|2fd0eab90a0a0bb40061cf732d32967c' 
+    }
   ]
 };
 
@@ -201,7 +291,7 @@ class BulkDataGenerator {
   constructor(options = {}) {
     this.recordCount = options.recordCount || 10000;
     this.batchSize = options.batchSize || 1000;
-    this.outputFile = options.outputFile || 'bulk-data.csv';
+    this.outputFile = options.outputFile || 'bulk-data.xlsx';
     this.tableName = options.tableName || 'incident';
     
     // Initialize OpenRouter LLM
@@ -216,17 +306,19 @@ class BulkDataGenerator {
   }
 
   /**
-   * Generate bulk data and write to CSV
+   * Generate bulk data and write to Excel
    */
   async generate() {
     console.time('Data generation');
     
-    // Create CSV writer
-    const csvWriter = createObjectCsvWriter({
-      path: this.outputFile,
-      header: this.createCsvHeader()
-    });
-
+    // Create Excel workbook
+    const workbook = new Excel.Workbook();
+    const worksheet = workbook.addWorksheet(this.tableName);
+    
+    // Add header row
+    const headers = this.createExcelHeader();
+    worksheet.columns = headers;
+    
     // Generate data in batches to avoid memory issues
     let recordsGenerated = 0;
     const totalBatches = Math.ceil(this.recordCount / this.batchSize);
@@ -237,38 +329,111 @@ class BulkDataGenerator {
       const batchSize = Math.min(this.batchSize, this.recordCount - recordsGenerated);
       const records = await this.generateBatch(batchSize);
       
-      await csvWriter.writeRecords(records);
+      // Add records to worksheet
+      worksheet.addRows(records.map(record => this.transformRecordForExcel(record)));
       
       recordsGenerated += batchSize;
       console.log(`Batch ${batchNum + 1}/${totalBatches} complete. ${recordsGenerated}/${this.recordCount} records generated.`);
     }
     
+    // Save the workbook
+    await workbook.xlsx.writeFile(this.outputFile);
+    
     console.timeEnd('Data generation');
     console.log(`Data generation complete. ${recordsGenerated} records written to ${this.outputFile}`);
   }
+  
+  /**
+   * Transform a record to use display values instead of sys_ids
+   * @param {Object} record - The record with sys_ids
+   * @returns {Object} - The record with display values
+   */
+  transformRecordForExcel(record) {
+    const transformed = { ...record };
+    
+    // Replace sys_ids with display values for reference fields
+    if (record.caller_id) {
+      const caller = referenceData.sys_user.find(user => user.sys_id === record.caller_id);
+      transformed.caller_id = caller ? caller.display_value : record.caller_id;
+    }
+    
+    if (record.business_service) {
+      const service = referenceData.cmdb_ci_service.find(svc => svc.sys_id === record.business_service);
+      transformed.business_service = service ? service.display_value : record.business_service;
+    }
+    
+    if (record.service_offering) {
+      const offering = referenceData.service_offering.find(off => off.sys_id === record.service_offering);
+      transformed.service_offering = offering ? offering.display_value : record.service_offering;
+    }
+    
+    if (record.cmdb_ci) {
+      const ci = referenceData.cmdb_ci.find(item => item.sys_id === record.cmdb_ci);
+      transformed.cmdb_ci = ci ? ci.display_value : record.cmdb_ci;
+    }
+    
+    if (record.assignment_group) {
+      const group = referenceData.sys_user_group.find(grp => grp.sys_id === record.assignment_group);
+      transformed.assignment_group = group ? group.display_value : record.assignment_group;
+    }
+    
+    if (record.assigned_to) {
+      const assignee = referenceData.sys_user.find(user => user.sys_id === record.assigned_to);
+      transformed.assigned_to = assignee ? assignee.display_value : record.assigned_to;
+    }
+    
+    // Replace numeric values with display values for choice fields
+    if (record.state) {
+      const stateObj = choiceValues.state.find(s => s.value === record.state);
+      transformed.state = stateObj ? stateObj.display : record.state;
+    }
+    
+    if (record.impact) {
+      const impactObj = choiceValues.impact.find(i => i.value === record.impact);
+      transformed.impact = impactObj ? impactObj.display : record.impact;
+    }
+    
+    if (record.urgency) {
+      const urgencyObj = choiceValues.urgency.find(u => u.value === record.urgency);
+      transformed.urgency = urgencyObj ? urgencyObj.display : record.urgency;
+    }
+    
+    // Calculate priority display value
+    if (record.priority) {
+      const priorityMap = {
+        1: 'Critical',
+        2: 'High',
+        3: 'Moderate',
+        4: 'Low',
+        5: 'Planning'
+      };
+      transformed.priority = priorityMap[record.priority] || record.priority;
+    }
+    
+    return transformed;
+  }
 
   /**
-   * Create CSV header based on the table
+   * Create Excel header based on the table
    */
-  createCsvHeader() {
+  createExcelHeader() {
     if (this.tableName === 'incident') {
       return [
-        { id: 'number', title: 'Number' },
-        { id: 'caller_id', title: 'Caller' },
-        { id: 'category', title: 'Category' },
-        { id: 'subcategory', title: 'Subcategory' },
-        { id: 'business_service', title: 'Service' },
-        { id: 'service_offering', title: 'Service offering' },
-        { id: 'cmdb_ci', title: 'Configuration item' },
-        { id: 'short_description', title: 'Short description' },
-        { id: 'description', title: 'Description' },
-        { id: 'contact_type', title: 'Channel' },
-        { id: 'state', title: 'State' },
-        { id: 'impact', title: 'Impact' },
-        { id: 'urgency', title: 'Urgency' },
-        { id: 'priority', title: 'Priority' },
-        { id: 'assignment_group', title: 'Assignment group' },
-        { id: 'assigned_to', title: 'Assigned to' }
+        { header: 'Caller', key: 'caller_id', width: 20 },
+        { header: 'Category', key: 'category', width: 15 },
+        { header: 'Subcategory', key: 'subcategory', width: 20 },
+        { header: 'Service', key: 'business_service', width: 25 },
+        { header: 'Service offering', key: 'service_offering', width: 25 },
+        { header: 'Configuration item', key: 'cmdb_ci', width: 30 },
+        { header: 'Short description', key: 'short_description', width: 40 },
+        { header: 'Description', key: 'description', width: 60 },
+        { header: 'Channel', key: 'contact_type', width: 15 },
+        { header: 'State', key: 'state', width: 15 },
+        { header: 'Impact', key: 'impact', width: 15 },
+        { header: 'Urgency', key: 'urgency', width: 15 },
+        { header: 'Priority', key: 'priority', width: 15 },
+        { header: 'Assignment group', key: 'assignment_group', width: 25 },
+        { header: 'Assigned to', key: 'assigned_to', width: 20 }
       ];
     } else if (this.tableName === 'case') {
       // TODO: Implement case table headers
