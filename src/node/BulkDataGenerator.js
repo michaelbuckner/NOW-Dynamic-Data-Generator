@@ -306,24 +306,65 @@ class BulkDataGenerator {
   }
 
   /**
-   * Generate bulk data and write to Excel
+   * Generate bulk data and write to Excel or CSV
    */
   async generate() {
     console.time('Data generation');
     
-    // Create Excel workbook
-    const workbook = new Excel.Workbook();
-    const worksheet = workbook.addWorksheet(this.tableName);
+    let workbook;
+    let worksheet;
     
-    // Add header row
-    const headers = this.createExcelHeader();
-    worksheet.columns = headers;
+    // Determine if we should output as CSV based on file extension
+    const isCSVOutput = this.outputFile.toLowerCase().endsWith('.csv');
+    
+    if (isCSVOutput) {
+      console.log(`Output format is CSV: ${this.outputFile}`);
+      // Create a new workbook and worksheet for generating data
+      // (We'll convert to CSV at the end)
+      workbook = new Excel.Workbook();
+      worksheet = workbook.addWorksheet(this.tableName);
+      
+      // Add header row
+      const headers = this.createExcelHeader();
+      worksheet.columns = headers;
+    } else {
+      // Check if the output file exists
+      const fileExists = fs.existsSync(this.outputFile);
+      
+      if (fileExists) {
+        console.log(`Output file ${this.outputFile} exists. Reading existing file...`);
+        // Read the existing workbook
+        workbook = new Excel.Workbook();
+        await workbook.xlsx.readFile(this.outputFile);
+        
+        // Get the first worksheet or create it if it doesn't exist
+        worksheet = workbook.getWorksheet(1) || workbook.addWorksheet(this.tableName);
+        
+        // If the worksheet has no rows, add headers
+        if (worksheet.rowCount <= 1) {
+          const headers = this.createExcelHeader();
+          worksheet.columns = headers;
+        }
+      } else {
+        console.log(`Creating new output file ${this.outputFile}...`);
+        // Create a new workbook and worksheet
+        workbook = new Excel.Workbook();
+        worksheet = workbook.addWorksheet(this.tableName);
+        
+        // Add header row
+        const headers = this.createExcelHeader();
+        worksheet.columns = headers;
+      }
+    }
     
     // Generate data in batches to avoid memory issues
     let recordsGenerated = 0;
     const totalBatches = Math.ceil(this.recordCount / this.batchSize);
     
     console.log(`Generating ${this.recordCount} records in ${totalBatches} batches of ${this.batchSize}...`);
+    
+    // Determine the starting row (skip header row)
+    const startRow = worksheet.rowCount > 0 ? worksheet.rowCount + 1 : 2;
     
     for (let batchNum = 0; batchNum < totalBatches; batchNum++) {
       const batchSize = Math.min(this.batchSize, this.recordCount - recordsGenerated);
@@ -336,8 +377,56 @@ class BulkDataGenerator {
       console.log(`Batch ${batchNum + 1}/${totalBatches} complete. ${recordsGenerated}/${this.recordCount} records generated.`);
     }
     
-    // Save the workbook
-    await workbook.xlsx.writeFile(this.outputFile);
+    // Save the data in the appropriate format
+    if (isCSVOutput) {
+      // Write to CSV file
+      console.log(`Writing data to CSV file: ${this.outputFile}`);
+      try {
+        // Use the csv.writeFile method instead of writeBuffer
+        await workbook.csv.writeFile(this.outputFile);
+      } catch (error) {
+        console.error(`Error writing CSV file: ${error.message}`);
+        
+        // Fallback approach: manually create CSV content
+        console.log("Using fallback CSV generation approach...");
+        const csvRows = [];
+        
+        // Add header row
+        const headers = this.createExcelHeader();
+        csvRows.push(headers.map(h => h.header).join(','));
+        
+        // Add data rows
+        for (let i = 1; i <= worksheet.rowCount; i++) {
+          const row = worksheet.getRow(i);
+          const rowData = [];
+          
+          // Skip header row (already added)
+          if (i === 1) continue;
+          
+          // Get values for each column
+          for (let j = 1; j <= headers.length; j++) {
+            const cell = row.getCell(j);
+            // Escape commas and quotes in cell values
+            let value = cell.value || '';
+            if (typeof value === 'string') {
+              value = value.replace(/"/g, '""');
+              if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                value = `"${value}"`;
+              }
+            }
+            rowData.push(value);
+          }
+          
+          csvRows.push(rowData.join(','));
+        }
+        
+        // Write CSV content to file
+        fs.writeFileSync(this.outputFile, csvRows.join('\n'));
+      }
+    } else {
+      // Save as Excel file
+      await workbook.xlsx.writeFile(this.outputFile);
+    }
     
     console.timeEnd('Data generation');
     console.log(`Data generation complete. ${recordsGenerated} records written to ${this.outputFile}`);
