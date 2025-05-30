@@ -26,6 +26,8 @@ There is also an additional script include for generating mass summarizies and e
 - All class names have been prefixed with "Now" (e.g., AbstractDataGenerator → NowAbstractDataGenerator)
 - Attachment functionality has been removed from all classes
 - File names have been updated to match the new class names
+- Added ability to split output into separate files for closed and open cases using the `--split=true` parameter
+- Improved error handling with silent error management for JSON parsing issues
 
 ## Prerequisites
 
@@ -261,11 +263,11 @@ The project is organized into the following directories:
 ## Features
 
 - Generate 10K+ records with realistic data for ServiceNow tables
-- Focused implementation for incident records (with case records coming soon)
+- Support for incident and CSM case records
 - Hard-coded reference and choice values for consistent data generation
 - OpenRouter LLM integration for generating realistic short descriptions and detailed descriptions
 - Optimized for performance with batch processing
-- CSV output for easy import into ServiceNow
+- CSV or Excel output for easy import into ServiceNow
 
 ## Prerequisites
 
@@ -315,6 +317,8 @@ Options:
 - `--count`: Number of records to generate (default: 10000)
 - `--batch`: Batch size for processing (default: 1000)
 - `--table`: Table to generate data for (default: incident)
+- `--closed`: Percentage of records that should be closed (default: 30)
+- `--split`: Whether to split output into separate files for closed and open cases (default: false)
 - `--model`: OpenRouter model to use (default: openai/gpt-3.5-turbo)
 - `--apiKey`: Your OpenRouter API key
 
@@ -355,6 +359,26 @@ The generator creates incident records with the following fields:
 - **priority**: Calculated priority based on impact and urgency
 - **assignment_group**: Reference to a group in the sys_user_group table
 - **assigned_to**: Reference to a user in the sys_user table
+
+### Generated Fields for CSM Case Records
+
+The generator creates CSM case records with the following fields:
+
+- **number**: Unique case number (e.g., CS0010001)
+- **account**: Reference to a customer account
+- **contact**: Reference to a contact at the customer account
+- **case_type**: Type of case (e.g., Question, Issue, Feature Request)
+- **category**: Case category (e.g., Account, Billing, Product)
+- **subcategory**: Subcategory related to the category (e.g., Access, Invoice, Defect)
+- **short_description**: AI-generated concise description of the case
+- **description**: AI-generated detailed description that elaborates on the short description
+- **contact_type**: Method of contact (e.g., Email, Phone, Self-service)
+- **state**: Case state (e.g., New, In Progress, Awaiting Customer)
+- **priority**: Priority level (1-5)
+- **assignment_group**: Reference to a group in the sys_user_group table
+- **assigned_to**: Reference to a user in the sys_user table
+- **close_code**: Reason for closing the case (for resolved/closed cases)
+- **close_notes**: AI-generated notes explaining the resolution (for resolved/closed cases)
 
 ## OpenRouter LLM Integration
 
@@ -415,14 +439,34 @@ The Bulk Data Generator includes several optimizations to improve performance:
 node src/node/BulkDataGenerator.js --output=incidents.csv --count=10000 --model=openai/gpt-3.5-turbo --apiKey=your-api-key
 ```
 
-### Example 2: Using the Sample Data Scripts
+### Example 2: Generate CSM Case Records with OpenRouter
+
+```bash
+# Generate 5,000 CSM case records using GPT-3.5 Turbo
+node src/node/BulkDataGenerator.js --output=cases.xlsx --count=5000 --table=case --model=openai/gpt-3.5-turbo --apiKey=your-api-key
+```
+
+### Example 3: Generate Split Output for Closed and Open Cases
+
+```bash
+# Generate 5,000 CSM case records with 50% closed, split into separate files
+node src/node/BulkDataGenerator.js --output=cases.csv --count=5000 --table=case --closed=50 --split=true --apiKey=your-api-key
+```
+
+This will generate two separate files:
+- `cases-closed.csv`: Contains only closed/resolved cases
+- `cases-open.csv`: Contains only open cases (new, in progress, on hold, etc.)
+
+The split feature is useful when you need to import different sets of records separately or when you want to analyze closed and open cases independently.
+
+### Example 4: Using the Sample Data Scripts
 
 ```bash
 # Unix/Linux/Mac - Generate 5,000 incident records using Claude
 ./generate-sample-data.sh anthropic/claude-3-haiku-20240307 your-api-key incident 5000
 
-# Windows - Generate 2,000 incident records using GPT-4
-generate-sample-data.bat openai/gpt-4-turbo your-api-key incident 2000
+# Windows - Generate 2,000 CSM case records using GPT-4
+generate-sample-data.bat openai/gpt-4-turbo your-api-key case 2000
 ```
 
 ## Troubleshooting
@@ -453,6 +497,14 @@ generate-sample-data.bat openai/gpt-4-turbo your-api-key incident 2000
    - Reducing the batch size
    - Using a different model
    - Spreading the generation over multiple runs
+
+6. **JSON Parsing Errors**: The generator has improved error handling for JSON parsing issues that may occur when processing LLM responses. These errors are now handled silently with multiple fallback mechanisms:
+   - Automatic fixing of common JSON formatting issues
+   - Extraction of content from malformed JSON responses
+   - Multiple parsing strategies to recover usable data
+   - Fallback to template-based content generation when all parsing attempts fail
+   
+   This ensures the generation process continues smoothly even when the LLM returns improperly formatted JSON.
 
 ## Important Notes
 
