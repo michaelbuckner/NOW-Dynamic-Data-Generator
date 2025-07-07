@@ -455,6 +455,7 @@ class BulkDataGenerator {
         { header: 'Short description', key: 'short_description', width: 40 },
         { header: 'Description', key: 'description', width: 60 },
         { header: 'Channel', key: 'contact_type', width: 15 },
+        { header: 'Opened', key: 'opened_at', width: 25 },
         { header: 'State', key: 'state', width: 15 },
         { header: 'Impact', key: 'impact', width: 15 },
         { header: 'Urgency', key: 'urgency', width: 15 },
@@ -504,6 +505,21 @@ class BulkDataGenerator {
   }
 
   /**
+   * Generate a random opened_at date/time within the last year
+   * @returns {string} - ISO formatted date/time string
+   */
+  generateRandomOpenedAt() {
+    const now = new Date();
+    const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    
+    // Generate random timestamp between one year ago and now
+    const randomTime = oneYearAgo.getTime() + Math.random() * (now.getTime() - oneYearAgo.getTime());
+    const randomDate = new Date(randomTime);
+    
+    return randomDate.toISOString();
+  }
+
+  /**
    * Generate an incident record
    * @param {number} index - Index of the record in the batch
    * @returns {Promise<Object>} - Generated incident record
@@ -531,6 +547,9 @@ class BulkDataGenerator {
       
       // Get random contact type
       const contactType = this.getRandomChoice('contact_type');
+      
+      // Generate random opened_at date/time
+      const openedAt = this.generateRandomOpenedAt();
       
       // Get random state
       const stateObj = this.getRandomChoice('state');
@@ -592,6 +611,7 @@ class BulkDataGenerator {
         short_description: shortDescription,
         description,
         contact_type: contactType,
+        opened_at: openedAt,
         state,
         impact,
         urgency,
