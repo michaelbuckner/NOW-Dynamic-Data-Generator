@@ -31,7 +31,7 @@ const closedPercentage = parseInt(args.closed || '30', 10); // Default to 30% cl
 const splitOutput = args.split === 'true'; // Whether to split output into separate files for closed and not closed cases
 
 // Command line arguments for LLM
-const model = args.model || 'openai/gpt-3.5-turbo'; // Default model
+const model = args.model || 'google/gemini-2.0-flash-001'; // Default model
 const apiKey = args.apiKey || process.env.OPENROUTER_API_KEY; // API key from args or env var
 
 // Hard-coded reference data for ServiceNow tables
@@ -201,13 +201,13 @@ class BulkDataGenerator {
     
     // Initialize OpenRouter LLM
     this.llm = new OpenRouterLLM({
-      model: options.model || 'openai/gpt-3.5-turbo',
+      model: options.model || 'google/gemini-2.0-flash-001',
       apiKey: options.apiKey,
       temperature: 0.7,
       maxTokens: 500
     });
     
-    console.log(`Using OpenRouter with model: ${options.model || 'openai/gpt-3.5-turbo'}`);
+    console.log(`Using OpenRouter with model: ${options.model || 'google/gemini-2.0-flash-001'}`);
   }
 
   /**
@@ -641,15 +641,17 @@ class BulkDataGenerator {
    */
   async generateIncidentDescriptions(category, subcategory) {
     try {
-      const prompt = `Generate a realistic ServiceNow incident short description and detailed description for the following:
-- Category: ${category}
-- Subcategory: ${subcategory}
+      const prompt = `Create a realistic ServiceNow incident for ${category} - ${subcategory}. 
 
-Format your response as JSON with 'shortDescription' and 'description' fields. 
-The short description should be a brief summary (under 100 characters).
-The description should be detailed (200-400 characters).`;
+Respond with ONLY a JSON object in this exact format:
+{
+  "shortDescription": "Brief issue summary under 80 characters",
+  "description": "Detailed description of the problem and impact, 150-300 characters"
+}
 
-      const response = await this.llm.generateText(prompt);
+Make it realistic and specific to the category/subcategory. Do not include any other text.`;
+
+      const response = await this.llm.generateText(prompt, 300);
       
       // Try to parse the response as JSON
       let parsedResponse;
@@ -787,18 +789,27 @@ The description should be detailed (200-400 characters).`;
    */
   async generateCloseNotes(shortDescription, description, closeCode) {
     try {
-      const prompt = `Generate realistic ServiceNow incident close notes for the following:
-- Short Description: ${shortDescription}
-- Description: ${description}
-- Close Code: ${closeCode}
+      const prompt = `Write realistic ServiceNow incident close notes for:
+Issue: ${shortDescription}
+Close Code: ${closeCode}
 
-The close notes should explain the resolution process and outcome (100-200 characters).`;
+Write 1-2 sentences explaining how this was resolved. Be specific and professional. Maximum 150 characters. Do not include quotes or extra formatting.`;
 
-      const response = await this.llm.generateText(prompt);
-      return response.trim();
+      const response = await this.llm.generateText(prompt, 200);
+      
+      // Clean up the response - remove quotes and extra formatting
+      let cleanedResponse = response.trim()
+        .replace(/^["']/, '')  // Remove leading quotes
+        .replace(/["']$/, '')  // Remove trailing quotes
+        .replace(/^Close notes?:?\s*/i, '')  // Remove "Close notes:" prefix
+        .replace(/^Resolution:?\s*/i, '')    // Remove "Resolution:" prefix
+        .replace(/\n/g, ' ')   // Replace newlines with spaces
+        .trim();
+      
+      return cleanedResponse || `Incident resolved. ${closeCode} applied.`;
     } catch (error) {
       // Silently handle LLM errors for close notes
-      return `Incident closed with code: ${closeCode}. The issue was resolved according to standard procedures.`;
+      return `Incident resolved. ${closeCode} applied.`;
     }
   }
 

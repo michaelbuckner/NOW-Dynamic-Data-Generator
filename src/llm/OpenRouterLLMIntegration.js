@@ -125,7 +125,7 @@ class OpenRouterLLM {
 // Example usage:
 async function testOpenRouterLLM() {
   const llm = new OpenRouterLLM({
-    model: 'openai/gpt-3.5-turbo', // OpenRouter model identifier
+    model: 'google/gemini-2.0-flash-001', // OpenRouter model identifier
     temperature: 0.7,
     maxTokens: 100
   });
