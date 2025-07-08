@@ -43,12 +43,12 @@ To use the OpenAI API with ServiceNow, you need to set up your API key:
 
 1. https://docs.servicenow.com/bundle/xanadu-intelligent-experiences/page/administer/generative-ai-controller/task/configure-api-credentials-for-openai.html 
 
-### 2. Set Default Provider for Generate Content and Generic Prompt Skills
+### 2. Set Default Provider for  Generic Prompt Skill
 
 To ensure the NowDataGenerator uses the correct AI provider:
 
 1. In the navigation filter, search for the OneExtend Capability table by entering sys_one_extend_capability.list.
-2. Open the record for the capability that you would like to configure, in this case we want to set a default provider for Generate Content.
+2. Open the record for the capability that you would like to configure, in this case we want to set a default provider for Generic Prompt.
 3. In the "OneExtend Definition Configs" related list, set OpenAI as the default provider.
 4. Save your changes.
 5. https://docs.servicenow.com/bundle/xanadu-intelligent-experiences/page/administer/generative-ai-controller/task/configure-a-provider-for-a-generative-ai-capability.html
