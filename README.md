@@ -319,7 +319,7 @@ Options:
 - `--table`: Table to generate data for (default: incident)
 - `--closed`: Percentage of records that should be closed (default: 30)
 - `--split`: Whether to split output into separate files for closed and open cases (default: false)
-- `--model`: OpenRouter model to use (default: openai/gpt-3.5-turbo)
+- `--model`: OpenRouter model to use (default: google/gemini-2.0-flash-001)
 - `--apiKey`: Your OpenRouter API key
 
 You can also use the provided scripts for convenience:
@@ -341,9 +341,8 @@ generate-sample-data.bat [model] [apiKey] [table] [count]
 
 ### Generated Fields for Incident Records
 
-The generator creates incident records with the following fields:
+The generator creates incident records with the following fields optimized for ServiceNow import:
 
-- **number**: Unique incident number (e.g., INC0010001)
 - **caller_id**: Reference to a user in the sys_user table
 - **category**: IT service category (e.g., Network, Hardware, Software)
 - **subcategory**: Subcategory related to the category (e.g., VPN, Laptop, Application)
@@ -353,12 +352,27 @@ The generator creates incident records with the following fields:
 - **short_description**: AI-generated concise description of the incident
 - **description**: AI-generated detailed description that elaborates on the short description
 - **contact_type**: Method of contact (e.g., Email, Phone, Self-service)
-- **state**: Incident state (1-New, 2-In Progress, etc.)
-- **impact**: Impact level (1-High, 2-Medium, 3-Low)
-- **urgency**: Urgency level (1-High, 2-Medium, 3-Low)
-- **priority**: Calculated priority based on impact and urgency
+- **opened_at**: Date/time in ServiceNow format (YYYY-MM-DD HH:MM:SS)
+- **incident_state**: Incident state with proper field mapping (New, In Progress, Resolved, etc.)
+- **impact**: Impact level as numeric values (1=High, 2=Medium, 3=Low)
+- **urgency**: Urgency level as numeric values (1=High, 2=Medium, 3=Low)
+- **priority**: Left empty for ServiceNow to auto-calculate from Impact and Urgency
 - **assignment_group**: Reference to a group in the sys_user_group table
 - **assigned_to**: Reference to a user in the sys_user table
+- **resolution_code**: Reason for closing the incident (for resolved/closed incidents)
+- **resolution_notes**: AI-generated notes explaining the resolution (for resolved/closed incidents)
+
+### ServiceNow Import Compatibility
+
+The generator has been optimized for seamless ServiceNow import with the following features:
+
+- **Proper Date Format**: The "Opened" field uses ServiceNow's expected format (YYYY-MM-DD HH:MM:SS)
+- **Numeric Values**: Impact and Urgency use numeric values (1, 2, 3) instead of text for proper field mapping
+- **Auto-calculated Priority**: Priority field is left empty so ServiceNow can calculate it automatically from Impact and Urgency
+- **Field Name Mapping**: Column headers match ServiceNow field names for automatic mapping:
+  - "Incident State" instead of "State" for proper auto-mapping
+  - "Resolution code" instead of "Close code"
+  - "Resolution notes" instead of "Close notes"
 
 ### Generated Fields for CSM Case Records
 
