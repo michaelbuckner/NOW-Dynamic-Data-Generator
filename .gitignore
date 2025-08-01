@@ -5,8 +5,25 @@ yarn.lock
 
 # Generated data
 *.csv
+*.xlsx
 bulk-data.csv
 sample-data.csv
+
+# Test files and temporary outputs
+test-*.csv
+test-*.xlsx
+*-test.csv
+*-test.xlsx
+*_copy.xlsx
+incident.xlsx
+incidents_copy.xlsx
+
+# Analysis and debugging files
+codebase-*.json
+codebase-*.html
+codebase-*.md
+examine-*.js
+CODEBASE_ANALYSIS_REPORT.md
 
 # Environment variables
 .env
