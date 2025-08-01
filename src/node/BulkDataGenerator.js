@@ -456,14 +456,14 @@ class BulkDataGenerator {
         { header: 'Description', key: 'description', width: 60 },
         { header: 'Channel', key: 'contact_type', width: 15 },
         { header: 'Opened', key: 'opened_at', width: 25 },
-        { header: 'State', key: 'state', width: 15 },
+        { header: 'Incident State', key: 'state', width: 15 },
         { header: 'Impact', key: 'impact', width: 15 },
         { header: 'Urgency', key: 'urgency', width: 15 },
         { header: 'Priority', key: 'priority', width: 15 },
         { header: 'Assignment group', key: 'assignment_group', width: 25 },
         { header: 'Assigned to', key: 'assigned_to', width: 20 },
-        { header: 'Close code', key: 'close_code', width: 25 },
-        { header: 'Close notes', key: 'close_notes', width: 60 }
+        { header: 'Resolution code', key: 'close_code', width: 25 },
+        { header: 'Resolution notes', key: 'close_notes', width: 60 }
       ];
     } else if (this.tableName === 'case') {
       return [
@@ -506,7 +506,7 @@ class BulkDataGenerator {
 
   /**
    * Generate a random opened_at date/time within the last year
-   * @returns {string} - ISO formatted date/time string
+   * @returns {string} - Formatted date/time string in ServiceNow format
    */
   generateRandomOpenedAt() {
     const now = new Date();
@@ -516,7 +516,15 @@ class BulkDataGenerator {
     const randomTime = oneYearAgo.getTime() + Math.random() * (now.getTime() - oneYearAgo.getTime());
     const randomDate = new Date(randomTime);
     
-    return randomDate.toISOString();
+    // Format as YYYY-MM-DD HH:MM:SS for ServiceNow
+    const year = randomDate.getFullYear();
+    const month = String(randomDate.getMonth() + 1).padStart(2, '0');
+    const day = String(randomDate.getDate()).padStart(2, '0');
+    const hours = String(randomDate.getHours()).padStart(2, '0');
+    const minutes = String(randomDate.getMinutes()).padStart(2, '0');
+    const seconds = String(randomDate.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
 
   /**
@@ -555,16 +563,16 @@ class BulkDataGenerator {
       const stateObj = this.getRandomChoice('state');
       const state = stateObj.display;
       
-      // Get random impact
+      // Get random impact (just the number)
       const impactObj = this.getRandomChoice('impact');
-      const impact = impactObj.display;
+      const impact = impactObj.value;
       
-      // Get random urgency
+      // Get random urgency (just the number)
       const urgencyObj = this.getRandomChoice('urgency');
-      const urgency = urgencyObj.display;
+      const urgency = urgencyObj.value;
       
-      // Calculate priority based on impact and urgency
-      const priority = Math.min(Math.ceil((impactObj.value + urgencyObj.value) / 2), 5);
+      // Don't set priority - let ServiceNow calculate it automatically
+      const priority = '';
       
       // Get random assignment group
       const assignmentGroup = this.getRandomReference('sys_user_group');
