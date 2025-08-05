@@ -78,15 +78,17 @@ jobs:
 
     - name: Download all artifacts
       uses: actions/download-artifact@v4
+      with:
+        path: artifacts
 
     - name: Create release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          bulk-generator-windows-amd64/bulk-generator-windows-amd64.exe
-          bulk-generator-darwin-amd64/bulk-generator-darwin-amd64
-          bulk-generator-darwin-arm64/bulk-generator-darwin-arm64
-          bulk-generator-linux-amd64/bulk-generator-linux-amd64
+          artifacts/bulk-generator-windows-amd64/bulk-generator-windows-amd64.exe
+          artifacts/bulk-generator-darwin-amd64/bulk-generator-darwin-amd64
+          artifacts/bulk-generator-darwin-arm64/bulk-generator-darwin-arm64
+          artifacts/bulk-generator-linux-amd64/bulk-generator-linux-amd64
         generate_release_notes: true
         draft: false
         prerelease: false
