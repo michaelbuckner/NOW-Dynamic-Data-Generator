@@ -31,14 +31,26 @@ Server-side JavaScript utilities for ServiceNow field analysis, data generation,
 
 ## 📦 Installation
 
-### Option 1: Download Pre-built Binaries
+### Option 1: Download Pre-built Binaries (Recommended)
 
-Download the appropriate binary for your platform from the releases page:
+Download the latest release from the [GitHub Releases page](https://github.com/michaelbuckner/NOW-Dynamic-Data-Generator/releases):
 
-- Windows: `bulk-generator-windows-amd64.exe`
-- macOS (Intel): `bulk-generator-darwin-amd64`
-- macOS (Apple Silicon): `bulk-generator-darwin-arm64`
-- Linux: `bulk-generator-linux-amd64`
+- **Windows (64-bit)**: `bulk-generator-windows-amd64.exe`
+- **macOS (Intel)**: `bulk-generator-darwin-amd64`
+- **macOS (Apple Silicon)**: `bulk-generator-darwin-arm64`
+- **Linux (64-bit)**: `bulk-generator-linux-amd64`
+
+No installation required - just download and run! The binaries are statically compiled and include all dependencies.
+
+#### Quick Start:
+```bash
+# Windows
+.\bulk-generator-windows-amd64.exe --help
+
+# macOS/Linux (make executable first)
+chmod +x bulk-generator-darwin-amd64  # or your platform's binary
+./bulk-generator-darwin-amd64 --help
+```
 
 ### Option 2: Build from Source
 
@@ -268,6 +280,48 @@ See [TEST_SUITE.md](TEST_SUITE.md) for detailed testing documentation.
 # Check API connectivity
 ./bulk-generator --table incident --count 1 --api-key "test-key"
 ```
+
+## 🚀 Creating Releases (Maintainers)
+
+This project uses GitHub Actions to automatically build cross-platform binaries and create releases. To create a new release:
+
+### Using the Release Script (Recommended)
+
+```bash
+# Make sure you're on the main branch with latest changes
+git checkout main
+git pull origin main
+
+# Create and push a new release tag
+./create-release.sh v1.0.0
+```
+
+The script will:
+1. Validate the version tag format (vX.Y.Z)
+2. Check for uncommitted changes
+3. Run the test suite
+4. Create and push the git tag
+5. Trigger the GitHub Actions workflow
+
+### Manual Release Process
+
+```bash
+# Create a tag
+git tag -a v1.0.0 -m "Release v1.0.0"
+
+# Push the tag
+git push origin v1.0.0
+```
+
+### What Happens Next
+
+The GitHub Actions workflow will automatically:
+1. Build binaries for all four platforms (Windows, macOS Intel, macOS ARM, Linux)
+2. Run tests to ensure quality
+3. Create a GitHub release with auto-generated release notes
+4. Attach all binaries to the release
+
+Monitor the build progress at: https://github.com/michaelbuckner/NOW-Dynamic-Data-Generator/actions
 
 ## 🤝 Contributing
 

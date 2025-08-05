@@ -1,0 +1,94 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: windows
+            goarch: amd64
+            suffix: .exe
+            name: windows-amd64
+          - goos: darwin
+            goarch: amd64
+            suffix: ""
+            name: darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            suffix: ""
+            name: darwin-arm64
+          - goos: linux
+            goarch: amd64
+            suffix: ""
+            name: linux-amd64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Get version
+      id: version
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+        else
+          VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "dev")
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Build binary
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 0
+      run: |
+        LDFLAGS="-X main.version=${{ steps.version.outputs.version }} -s -w"
+        go build -ldflags "$LDFLAGS" -o bulk-generator-${{ matrix.name }}${{ matrix.suffix }} ./cmd
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: bulk-generator-${{ matrix.name }}
+        path: bulk-generator-${{ matrix.name }}${{ matrix.suffix }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          bulk-generator-windows-amd64/bulk-generator-windows-amd64.exe
+          bulk-generator-darwin-amd64/bulk-generator-darwin-amd64
+          bulk-generator-darwin-arm64/bulk-generator-darwin-arm64
+          bulk-generator-linux-amd64/bulk-generator-linux-amd64
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

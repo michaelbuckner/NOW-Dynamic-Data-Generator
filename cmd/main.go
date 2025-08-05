@@ -15,6 +15,7 @@ import (
 )
 
 var (
+	version          = "dev" // Set by build process
 	outputFile       string
 	recordCount      int
 	batchSize        int
@@ -33,7 +34,16 @@ This version supports generating incident and CSM case records with realistic da
 	RunE: runBulkGenerator,
 }
 
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("NOW Dynamic Data Generator %s\n", version)
+	},
+}
+
 func init() {
+	rootCmd.AddCommand(versionCmd)
 	rootCmd.Flags().StringVarP(&outputFile, "output", "o", "bulk-data.xlsx", "Output file name")
 	rootCmd.Flags().IntVarP(&recordCount, "count", "c", 10000, "Number of records to generate")
 	rootCmd.Flags().IntVarP(&batchSize, "batch", "b", 1000, "Batch size for processing")
